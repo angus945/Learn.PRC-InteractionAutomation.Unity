@@ -1,0 +1,19 @@
+[submodule "Module.Communication.JsonRpc"]
+	path = Assets/CraftyRacoon/Module.Communication.JsonRpc
+	url = https://github.com/crafty-racoon/Module.Communication.JsonRpc.git
+	update = checkout
+
+[submodule "Module.Communication.JsonRpc.WebSocket"]
+	path = Assets/CraftyRacoon/Module.Communication.JsonRpc.WebSocket
+	url = https://github.com/crafty-racoon/Module.Communication.JsonRpc.WebSocket.git
+	update = checkout
+
+[submodule "Module.Communication.Unity3D"]
+	path = Assets/CraftyRacoon/Module.Communication.Unity3D
+	url = https://github.com/crafty-racoon/Module.Communication.Unity3D.git
+	update = checkout
+
+[submodule "Workspace.InteractionAutomation"]
+	path = Assets/CraftyRacoon/Workspace.InteractionAutomation
+	url = https://github.com/crafty-racoon/Workspace.InteractionAutomation.git
+	update = checkout
