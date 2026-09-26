@@ -387,6 +387,8 @@ B — explicit frame/state settling PASS
 C — state-processing separation   PASS
 ```
 
+Root cause of the earlier A failure was not a missing processing barrier. The driver had constructed later button events from host-observed state while an earlier move was still pending, so later full-state submissions could overwrite the pending position. The driver now owns a submitted `MouseState` and composes subsequent operations from that logical submitted state.
+
 Therefore the current Unity UI route does **not** require a formal processing synchronizer between ordinary Move / Down / Up submissions.
 
 Do not introduce:

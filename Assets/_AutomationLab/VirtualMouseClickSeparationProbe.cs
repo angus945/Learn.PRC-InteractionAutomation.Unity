@@ -367,33 +367,22 @@ public sealed class VirtualMouseClickSeparationProbe :
             $"C_InputSystemSeparationOnly={experimentCClickCount}");
 
         if (experimentAClickCount > 0 &&
-            experimentBClickCount > 0)
+            experimentBClickCount > 0 &&
+            experimentCClickCount > 0)
         {
             Debug.Log(
-                "RESULT: BOTH PASSED\n" +
-                "Current Unity UI route does not require explicit " +
-                "processing separation for this click sequence.");
-        }
-        else if (experimentAClickCount == 0 &&
-                 experimentBClickCount > 0)
-        {
-            Debug.Log(
-                "RESULT: ONLY B PASSED\n" +
-                "Processing separation is required for reliable " +
-                "Move -> Down -> Up interaction in the current route.");
-        }
-        else if (experimentAClickCount == 0 &&
-                 experimentBClickCount == 0)
-        {
-            Debug.LogError(
-                "RESULT: BOTH FAILED\n" +
-                "The issue is not explained by processing separation alone.");
+                "RESULT: A / B / C PASSED\n" +
+                "The submitted-state driver preserves sequential Move / Down / Up " +
+                "without requiring an explicit host-processing barrier.");
         }
         else
         {
             Debug.LogError(
-                "RESULT: A PASSED BUT B FAILED\n" +
-                "The experiment harness or separated lifecycle needs investigation.");
+                "RESULT: CLICK SEPARATION REGRESSION\n" +
+                $"A_NoSeparation={experimentAClickCount}\n" +
+                $"B_InputAndEventSystemSeparation={experimentBClickCount}\n" +
+                $"C_InputSystemSeparationOnly={experimentCClickCount}\n" +
+                "At least one previously verified interaction route no longer passes.");
         }
     }
 
