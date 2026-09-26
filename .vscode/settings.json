@@ -68,5 +68,5 @@
         "*.slnx": "*.csproj"
     },
     "dotnet.defaultSolution": "Learn.PRC-InteractionAutomation.Unity.slnx",
-    "dotnet.enableWorkspaceBasedDevelopment": false
+    "dotnet.enableWorkspaceBasedDevelopment": true
 }
