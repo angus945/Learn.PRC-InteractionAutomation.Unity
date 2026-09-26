@@ -11,7 +11,8 @@ public sealed class TargetDiscoveryProbe : MonoBehaviour
 
     private static async Task RunAsync()
     {
-        var source = new UnityInteractionTargetSource();
+        var source =
+            AutomationLabInteractionComposition.CreateTargetSource();
 
         var targets = await source.GetTargetsAsync();
 
@@ -21,6 +22,7 @@ public sealed class TargetDiscoveryProbe : MonoBehaviour
         {
             Debug.Log(
                 $"Target: {target.Id}\n" +
+                $"Kind: {target.Kind}\n" +
                 $"Bounds: " +
                 $"X={target.Bounds.X:0.##}, " +
                 $"Y={target.Bounds.Y:0.##}, " +

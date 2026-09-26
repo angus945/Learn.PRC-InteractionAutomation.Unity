@@ -1,274 +1,69 @@
 # InteractionAutomation.Unity3D Learning Roadmap
 
-## 1. Current Goal
+## Goal
 
-Project:
+Learn the architecture of physical interaction automation in Unity without turning implementation details into separate learning milestones.
 
-`https://github.com/angus945/Learn.PRC-InteractionAutomation.Unity`
-
-Current learning line:
-
-> Build a Unity Play Mode interaction-automation path that discovers explicit interaction targets and operates them through Unity's normal input / EventSystem route rather than directly invoking product behavior.
-
-Current route:
+Current model:
 
 ```text
-Unity Scene
-    ↓
-Interaction Target Discovery
-    ↓
+Application-defined Target Kind
+        ↓
 InteractionTargetSnapshot
-    ↓
-Target.Bounds.Center
-    ↓
+        ├─ Id
+        ├─ Kind
+        ├─ Bounds
+        └─ Capabilities
+        ↓
+Capability-driven interaction
+        ↓
 IPhysicalInputDriver
-    ↓
-Unity Input System Virtual Mouse
-    ↓
-InputSystemUIInputModule
-    ↓
-EventSystem / GraphicRaycaster
-    ↓
-Product UI behavior
+        ↓
+Unity normal input / product route
 ```
 
-Automation decides where and how to submit physical-style input. It does not call:
-
-```text
-Button.onClick.Invoke()
-ExecuteEvents.Execute()
-Gameplay callbacks
-```
+Automation decides **where and how to input**. It does not directly invoke product behavior.
 
 ---
 
-## 2. Coordinate Contract
+## Phase 1 — Interaction Target Model
 
-The neutral coordinate model has been collapsed to two spaces:
+Status: **Complete**
 
-```text
-InteractionCoordinateSpace
-├─ ApplicationSpace
-└─ OSSpace
-```
+- Target exposure is explicit through `InteractionTargetBinding`.
+- Target discovery produces host-neutral snapshots.
+- Unity objects do not leak into the neutral target contract.
 
-The old public spaces are removed:
+## Phase 2 — Canonical Coordinate Boundary
 
-```text
-Viewport
-Window
-Screen
-```
-
-There are no compatibility aliases.
-
-Both spaces use the same canonical orientation:
-
-```text
-Origin      = TopLeft
-Positive X  = Right
-Positive Y  = Down
-Unit        = pixel-equivalent interaction unit
-```
-
-### ApplicationSpace
-
-Coordinates understood by the automated application's interaction surface.
-
-Current Unity EXP-IA route:
-
-```text
-RectTransform
-    ↓
-Unity native projection
-    ↓
-ApplicationSpace InteractionRect
-    ↓
-Bounds.Center
-    ↓
-ApplicationSpace InteractionPoint
-    ↓
-UnityPhysicalInputDriver
-```
-
-### OSSpace
-
-Coordinates understood by an OS-global physical-input surface.
-
-Reserved for future adapters such as:
-
-```text
-Windows SendInput
-macOS CGEvent
-other OS-level input injection
-```
-
-EXP-IA-001 does not use OSSpace.
-
-Runner code does not perform ApplicationSpace ↔ OSSpace conversion. Window offsets, Game View offsets, editor chrome, DPI, display origins, letterboxing, and native client rectangles remain adapter details.
-
----
-
-## 3. Current Repository Revisions
-
-### Workspace.InteractionAutomation
-
-```text
-7d85d5994c5926158b4abb54e7bcc642b9629ce5
-Collapse interaction coordinates to application and OS spaces
-```
-
-Provides host-neutral contracts:
-
-```text
-Module.InteractionAutomation.Coordinates
-Module.InteractionAutomation.Targets
-Module.InteractionAutomation.PhysicalInput
-```
-
-Important physical-input semantics:
-
-```text
-operation completion
-=
-input submission completed
-
-!= host input processed
-!= EventSystem processed
-!= product behavior completed
-```
-
-Sequential submissions are required to compose without host-processing barriers.
-
-### Workspace.InteractionAutomation.Unity3D
-
-```text
-86198c4ddccdb670724ad33fee2846589c26a642
-Align Unity adapters with application-space coordinates
-```
-
-Current modules:
-
-```text
-Workspace.InteractionAutomation.Unity3D
-│
-├─ Module.InteractionAutomation.Coordinates.Unity3D
-│  └─ UnityApplicationCoordinates
-│
-├─ Module.InteractionAutomation.Targets.Unity3D
-│  ├─ InteractionTargetBinding
-│  ├─ UnityInteractionTargetSource
-│  └─ UnityUiApplicationGeometry
-│
-└─ Module.InteractionAutomation.PhysicalInput.Unity3D
-   └─ UnityPhysicalInputDriver
-```
-
-The Unity local pointer driver accepts:
+Status: **Complete**
 
 ```text
 ApplicationSpace
-```
-
-and rejects:
-
-```text
 OSSpace
 ```
 
----
+Unity local automation uses `ApplicationSpace`. Host-specific screen/window/DPI details stay inside adapters.
 
-## 4. EXP-IA-001A — First Unity Interaction Target
-
-Status: **Complete**
-
-Implemented:
-
-```text
-GameObject
-↓
-InteractionTargetBinding
-↓
-UnityInteractionTargetSource
-↓
-IInteractionTargetSource
-↓
-InteractionTargetSnapshot
-```
-
-First explicit target:
-
-```text
-button.confirm
-Role = Button
-Capabilities = PointerClick
-```
-
-Important boundary:
-
-```text
-Unity Button exists
-!=
-Automation target exists
-
-InteractionTargetBinding exists
-=
-Automation target is explicitly exposed
-```
-
----
-
-## 5. EXP-IA-001B — UI Target Geometry
+## Phase 3 — Physical Input Adapter
 
 Status: **Complete**
 
-Implemented:
-
 ```text
-RectTransform
-↓
-World Corners
-↓
-Canvas / Camera projection
-↓
-Unity native screen coordinates
-↓
-UnityApplicationCoordinates
-↓
-ApplicationSpace InteractionRect
-↓
-InteractionTargetSnapshot.Bounds
-```
-
-Verified:
-
-- top-left canonical convention;
-- +Y points downward;
-- Bounds.Center preserves ApplicationSpace;
-- RectTransform movement changes target geometry correctly;
-- target discovery exposes ApplicationSpace geometry.
-
-Not included yet:
-
-- occlusion;
-- UI Toolkit;
-- 3D target geometry;
-- multi-display semantics;
-- complex availability rules.
-
----
-
-## 6. EXP-IA-001C — Virtual Pointer
-
-Status: **Complete**
-
-Implemented:
-
-```text
-ApplicationSpace InteractionPoint
+IPhysicalInputDriver
 ↓
 UnityPhysicalInputDriver
 ↓
+Unity Input System virtual mouse
+```
+
+Operation completion means **submitted**, not host/UI/gameplay processed. Sequential `Move → Down → Up` submissions compose without consumer-inserted processing barriers.
+
+## Phase 4 — Application Input Route
+
+Status: **Complete**
+
+```text
 Virtual Mouse
 ↓
 Unity Input System
@@ -277,327 +72,216 @@ InputSystemUIInputModule
 ↓
 EventSystem
 ↓
-PointerEnter
+normal product behavior
 ```
 
-Verified:
+Physical and automation pointers can remain separate with `AllPointersAsIs`.
 
-- virtual Mouse creation;
-- ApplicationSpace → Unity native coordinate conversion;
-- pointer move submission;
-- Input System state processing;
-- EventSystem observes the virtual pointer;
-- physical Mouse and virtual Mouse can remain separate with:
-  `InputSystemUIInputModule.PointerBehavior = AllPointersAsIs`.
-
-Driver contract tests use `InputTestFixture` so they are isolated from Editor focus and real-device state.
-
-A previously explored `UnityInputSystemLifecycle` synchronization helper was removed. The experiments did not establish a need for a processing-barrier abstraction.
-
----
-
-## 7. EXP-IA-001D — First Real Automated Click
+## Phase 5 — Capability Generalization
 
 Status: **Complete**
 
-Implemented:
+Button and Toggle both use:
 
 ```text
-Capture target
-↓
-select button.confirm
+PointerClick
 ↓
 Bounds.Center
 ↓
 Move
-↓
-PointerDown Left
-↓
-PointerUp Left
-↓
-InputSystemUIInputModule
-↓
-EventSystem
-↓
-normal Button callback
-↓
-ClickCount++
-```
-
-The automation does not access:
-
-```text
-Button
-UnityEvent
-ButtonClickCounter.HandleClick()
-```
-
-except that the project-side counter observes the normal product callback for experimental verification.
-
-### Important finding: submitted state
-
-The first button implementation created later events from host-observed state. This made pending operations non-composable:
-
-```text
-Move queued
-Down created from stale host state
-Up created from stale host state
-```
-
-The Unity driver now maintains its own submitted `MouseState`:
-
-```text
-Move
-position = target
-button = up
-
-Down
-position = target
-button = down
-
-Up
-position = target
-button = up
-```
-
-This preserves ordered logical state even when all events are queued before Unity processes them.
-
-Contract test:
-
-```text
-Move
 Down
 Up
-↓
-single InputSystem.Update
-↓
-position preserved
-button released
 ```
 
-passes.
+Widget/product type does not choose the physical action implementation.
 
-### Processing-separation experiment
+## Phase 6 — Geometry Strategy
 
-After the submitted-state fix:
+Status: **Complete**
+
+Geometry is a Unity adapter strategy rather than a `RectTransform` assumption:
 
 ```text
-A — no separation                  PASS
-B — explicit frame/state settling PASS
-C — state-processing separation   PASS
+IUnityInteractionTargetGeometryProvider
+        ├─ RectTransform → ApplicationSpace Rect
+        └─ Renderer      → ApplicationSpace Rect
 ```
 
-Root cause of the earlier A failure was not a missing processing barrier. The driver had constructed later button events from host-observed state while an earlier move was still pending, so later full-state submissions could overwrite the pending position. The driver now owns a submitted `MouseState` and composes subsequent operations from that logical submitted state.
+`InteractionTargetSnapshot.Bounds` now represents interaction geometry rather than one Unity geometry technology.
 
-Therefore the current Unity UI route does **not** require a formal processing synchronizer between ordinary Move / Down / Up submissions.
+Detailed clipping, occlusion, renderer aggregation, and multi-camera policy are deferred until they become actual requirements.
 
-Do not introduce:
+## Phase 7 — Same Interaction, Different Product Domain
+
+Status: **Complete — architecture consolidated**
+
+The closed `InteractionTargetRole` enum has been removed from the neutral core.
+
+Target taxonomy is now open and process-local:
 
 ```text
-IPhysicalInputProcessingSynchronizer
-IInteractionStepSynchronizer
+IInteractionTargetKind
+        ↑
+        ├─ ButtonTargetKind
+        ├─ ToggleTargetKind
+        └─ ChestTargetKind
+
+InteractionTargetKindRegistry
+        ↓
+InteractionTargetSnapshot.Kind
 ```
 
-without new evidence.
-
----
-
-## 8. Current Physical Input Contract
-
-`IPhysicalInputDriver` remains host-neutral:
-
-```csharp
-await input.MovePointerAsync(point);
-await input.PointerDownAsync(PointerButton.Left);
-await input.PointerUpAsync(PointerButton.Left);
-```
-
-The Unity implementation must:
-
-1. fail fast when its virtual device is removed or disabled;
-2. accept only ApplicationSpace pointer positions;
-3. reject OSSpace rather than guessing conversion;
-4. preserve logical effects across sequential submissions;
-5. stop its responsibility at host input submission.
-
----
-
-## 9. Current Project Experiment Scene
-
-`Assets/_AutomationLab/AutoLab.unity` currently contains:
+Unity composition maps host component types to registered application kinds:
 
 ```text
-ConfirmButton
-├─ Button
-├─ InteractionTargetBinding
-├─ PointerHoverProbe
-└─ ButtonClickCounter
-
-EventSystem
-├─ EventSystem
-└─ InputSystemUIInputModule
-   └─ Pointer Behavior = All Pointers As Is
-
-Probe
-└─ VirtualMouseClickSeparationProbe
+Button   → ButtonTargetKind
+Toggle   → ToggleTargetKind
+Renderer → ChestTargetKind
 ```
 
-Earlier probes remain available as experiment history but are disabled.
-
----
-
-## 10. Next Slice — EXP-IA-001E
-
-Next goal:
-
-> Prove the automation path is not specialized for one Button.
-
-Add:
+The architecture now makes the distinction explicit:
 
 ```text
-MusicToggle
-├─ Toggle
-└─ InteractionTargetBinding
-   ├─ TargetId = toggle.music
-   ├─ Role = Toggle
-   └─ Capabilities = PointerClick
-```
+Kind
+= what the target is
 
-Automation still sees only:
-
-```text
-Target
-Bounds
 Capabilities
+= how automation may interact with it
 ```
 
-Expected behavior:
+Physical action selection remains capability-driven. Do not dispatch physical actions by target kind.
 
-```text
-False → True
-True  → False
-```
+The registry intentionally uses CLR `Type` identity only. Persistence, serialization, replay compatibility, and stable cross-process kind IDs are not current requirements.
 
-through the same:
-
-```text
-Move
-Down
-Up
-```
-
-physical-input path.
+A separate micro-milestone for a 3D click is not required before continuing. The reusable Runner is the next place to exercise the same capability across different product domains.
 
 ---
 
-## 11. Later Roadmap
+# Phase 8 — Interaction Runner
 
-### EXP-IA-002A — 3D World Target
+Status: **NEXT**
 
-```text
-Chest
-├─ Collider / Renderer
-└─ InteractionTargetBinding
-```
+Goal:
 
-Project geometry to:
+> Stop writing one-off probes for each interaction and introduce the smallest reusable application workflow.
+
+Concept:
 
 ```text
-ApplicationSpace InteractionRect
+Capture targets
+↓
+Select target
+↓
+Validate requested capability
+↓
+Derive interaction point
+↓
+Submit physical input
 ```
 
-Do not expose Unity world/camera internals to the neutral coordinate contract.
-
-### EXP-IA-002B — Same Pointer, 3D Target
-
-Product side performs its normal picking:
+The first Runner should know only:
 
 ```text
-Mouse position
-↓
-Camera.ScreenPointToRay
-↓
-Physics.Raycast
-↓
-Chest
+IInteractionTargetSource
+IPhysicalInputDriver
+InteractionTargetSnapshot
+PhysicalInteractionCapabilities
 ```
 
-Automation still submits only physical input.
-
-### Target Availability
-
-Later distinguish:
+It must not know:
 
 ```text
-Existence
-Geometry validity
-Visual visibility
-Input reachability
-Occlusion
-Gameplay eligibility
+Unity
+Button
+Toggle
+Renderer
+Collider
+EventSystem
+specific Target Kind
 ```
 
-Do not block the current click path on these semantics.
+The first reusable operation is `PointerClick`.
 
-### Interaction Runner
+## Phase 9 — Target Availability
 
-After the current experiments are stable, introduce the smallest reusable runner:
+Status: Pending
 
-```csharp
-targets = await targetSource.GetTargetsAsync();
-
-target = SelectTarget(targets);
-
-point = target.Bounds.Center;
-
-await input.MovePointerAsync(point);
-await input.PointerDownAsync(PointerButton.Left);
-await input.PointerUpAsync(PointerButton.Left);
-```
-
-Runner does not know Unity, EventSystem, Button, native screen orientation, or OS coordinate conversion.
-
-### Monkey / Verification / Remote
-
-Only after deterministic explicit-target interaction is stable:
+Separate:
 
 ```text
-Runner
-↓
-Monkey
-↓
-Observation / Verification
-↓
-Remote transport
+Exists
+HasGeometry
+Visible
+InputReachable
+GameplayEligible
 ```
 
-Communication remains transport-only and does not own interaction semantics.
+Discovery and operability are not the same concept.
+
+## Phase 10 — New Action Shapes
+
+Status: Pending
+
+Add only actions that introduce a new architectural problem:
+
+```text
+Drag
+Keyboard / TextInput
+Scroll
+```
+
+Do not create a learning milestone for every input enum value.
+
+## Phase 11 — Observation / Verification
+
+Status: Pending
+
+Separate execution from correctness:
+
+```text
+Runner → Action
+Observer / Verification → Result
+```
+
+## Phase 12 — Monkey / Exploration
+
+Status: Pending
+
+Monkey is selection policy over existing target/capability/runner primitives, not another interaction framework.
+
+## Phase 13 — Remote / OS Automation
+
+Status: Pending
+
+Only after the local Runner model is stable:
+
+```text
+External process
+↓
+transport
+↓
+Runner API
+↓
+Target / Physical Input
+```
+
+This is where `OSSpace`, serialization, and stable cross-process kind identity may become real requirements.
 
 ---
 
-## 12. Architecture Boundary Summary
+## Current Revisions
 
 ```text
 Workspace.InteractionAutomation
-    host-neutral contracts
-    ├─ ApplicationSpace / OSSpace
-    ├─ Targets
-    └─ PhysicalInput
+4d7247eb4d0ca049e1ccb5cc1f73c3d1d875caca
 
 Workspace.InteractionAutomation.Unity3D
-    Unity adapters
-    ├─ native Unity geometry ↔ ApplicationSpace
-    ├─ target discovery
-    └─ virtual physical input
-
-Learn.PRC-InteractionAutomation.Unity
-    experiment composition
-    ├─ scenes
-    ├─ probes
-    ├─ product test UI
-    └─ exact submodule revisions
+5edfeab613ffbdd0a7830882bc424cece0143b7b
 ```
 
-Core rule:
+## Current Learning Position
 
-> Coordinate Space identifies who understands a coordinate. It does not expose how many host-specific Window / Viewport / client-area transforms exist internally.
+```text
+Phases 1–7  COMPLETE
+Phase 8       START HERE
+```

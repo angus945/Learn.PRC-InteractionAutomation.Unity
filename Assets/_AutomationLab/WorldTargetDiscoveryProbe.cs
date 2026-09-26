@@ -23,14 +23,8 @@ public sealed class WorldTargetDiscoveryProbe :
         }
 
         var source =
-            new UnityInteractionTargetSource(
-                new IUnityInteractionTargetGeometryProvider[]
-                {
-                    new UnityRectTransformTargetGeometryProvider(),
-
-                    new UnityRendererTargetGeometryProvider(
-                        interactionCamera)
-                });
+            AutomationLabInteractionComposition.CreateTargetSource(
+                interactionCamera);
 
         Task<IReadOnlyList<InteractionTargetSnapshot>>
             capture =
@@ -62,7 +56,7 @@ public sealed class WorldTargetDiscoveryProbe :
             Debug.Log(
                 $"TARGET\n" +
                 $"Id={target.Id}\n" +
-                $"Role={target.Role}\n" +
+                $"Kind={target.Kind}\n" +
                 $"Capabilities={target.Capabilities}\n" +
                 $"Space={target.Bounds.Space}\n" +
                 $"Bounds=(" +
@@ -92,12 +86,11 @@ public sealed class WorldTargetDiscoveryProbe :
             yield break;
         }
 
-        if (chest.Value.Role !=
-            InteractionTargetRole.WorldObject)
+        if (!chest.Value.Kind.Is<ChestTargetKind>())
         {
             Debug.LogError(
-                $"Unexpected Role: " +
-                $"{chest.Value.Role}");
+                $"Unexpected Kind: " +
+                $"{chest.Value.Kind}");
 
             yield break;
         }

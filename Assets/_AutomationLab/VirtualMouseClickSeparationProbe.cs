@@ -50,7 +50,7 @@ public sealed class VirtualMouseClickSeparationProbe :
         //
 
         var source =
-            new UnityInteractionTargetSource();
+            AutomationLabInteractionComposition.CreateTargetSource();
 
         Task<IReadOnlyList<InteractionTargetSnapshot>> capture =
             source

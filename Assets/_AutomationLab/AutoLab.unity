@@ -174,7 +174,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: button.confirm
-  role: 1
   capabilities: 1
 --- !u!114 &11310479
 MonoBehaviour:
@@ -407,7 +406,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: toggle.music
-  role: 3
   capabilities: 1
 --- !u!114 &36762818
 MonoBehaviour:
@@ -791,7 +789,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: chest.001
-  role: 9
   capabilities: 1
 --- !u!1 &1134976232
 GameObject:

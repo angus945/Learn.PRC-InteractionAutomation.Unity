@@ -44,7 +44,7 @@ public sealed class MusicToggleExperimentProbe :
         //
 
         var source =
-            new UnityInteractionTargetSource();
+            AutomationLabInteractionComposition.CreateTargetSource();
 
         Task<IReadOnlyList<InteractionTargetSnapshot>>
             capture =
@@ -91,12 +91,11 @@ public sealed class MusicToggleExperimentProbe :
         // Verify metadata only.
         //
 
-        if (target.Role !=
-            InteractionTargetRole.Toggle)
+        if (!target.Kind.Is<ToggleTargetKind>())
         {
             Debug.LogError(
-                $"Expected Toggle role, " +
-                $"actual={target.Role}");
+                $"Expected {nameof(ToggleTargetKind)}, " +
+                $"actual={target.Kind}");
 
             yield break;
         }
@@ -128,7 +127,7 @@ public sealed class MusicToggleExperimentProbe :
         Debug.Log(
             "MUSIC TOGGLE TARGET\n" +
             $"Id={target.Id}\n" +
-            $"Role={target.Role}\n" +
+            $"Kind={target.Kind}\n" +
             $"Capabilities={target.Capabilities}\n" +
             $"Center=({point.X}, {point.Y})");
 
