@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check this Project's source/import policy; this is not a C# compiler."""
+"""Check this Project's Unity source/import policy; this is not a C# compiler."""
 from pathlib import Path
 import json
 import re
@@ -30,11 +30,13 @@ def validate(root):
     active = excluded = 0
     definitions = {}
     sources = []
+
     for module in MODULES:
         folder = mount / module
         if not folder.is_dir() or not any(folder.iterdir()):
             errors.append(f'{folder}: initialize the pinned submodule first')
             continue
+
         for path in folder.rglob('*'):
             if not imported(path, folder):
                 continue
@@ -42,6 +44,7 @@ def validate(root):
                 errors.append(f'{path}: SDK artifacts inside Assets; review/remove generated output locally')
             if any(part.lower() in ('bin', 'obj') for part in path.relative_to(folder).parts):
                 continue
+
             if path.suffix == '.asmdef':
                 try:
                     data = json.loads(path.read_text(encoding='utf-8-sig'))
@@ -50,12 +53,20 @@ def validate(root):
                     if path.parent in definitions:
                         errors.append(f'{path}: multiple asmdefs in one folder')
                     definitions[path.parent] = data
-                    if 'Module.Communication.JsonRpc.dll' in data.get('precompiledReferences', []):
-                        errors.append(f'{path}: RPC core must be referenced as a source assembly')
+
+                    precompiled = data.get('precompiledReferences', [])
+                    for forbidden in (
+                        'Module.Communication.JsonRpc.dll',
+                        'Module.Communication.JsonRpc.WebSocket.dll',
+                        'Module.Communication.Unity3D.dll',
+                    ):
+                        if forbidden in precompiled:
+                            errors.append(f'{path}: Communication modules must be source assemblies')
                 except (ValueError, KeyError) as error:
                     errors.append(f'{path}: invalid asmdef: {error}')
             elif path.suffix == '.cs':
                 sources.append(path)
+
     for path in sources:
         parent = path.parent
         definition = None
@@ -64,23 +75,48 @@ def validate(root):
                 definition = definitions[parent]
                 break
             parent = parent.parent
+
         if definition is None:
             errors.append(f'{path}: no explicit assembly boundary (would leak into Assembly-CSharp)')
             continue
+
         if '!UNITY_5_3_OR_NEWER' in definition.get('defineConstraints', []):
             excluded += 1
             continue
+
         active += 1
         text = path.read_text(encoding='utf-8-sig')
         for label, pattern in UNSUPPORTED:
             if re.search(pattern, text, re.MULTILINE):
                 errors.append(f'{path}: {label}')
-    # RPC is source-imported; the transport build's copy must not be imported again.
+
+    web_asm_path = mount / 'Module.Communication.JsonRpc.WebSocket' / 'src' / 'Module.Communication.JsonRpc.WebSocket.asmdef'
+    if web_asm_path.exists():
+        web = json.loads(web_asm_path.read_text(encoding='utf-8-sig'))
+        if 'Module.Communication.JsonRpc' not in web.get('references', []):
+            errors.append(f'{web_asm_path}: WebSocket source must reference JsonRpc source')
+        if web.get('precompiledReferences', []) != ['Newtonsoft.Json.dll']:
+            errors.append(f'{web_asm_path}: WebSocket source must reference only Newtonsoft.Json.dll')
+        if '!UNITY_5_3_OR_NEWER' in web.get('defineConstraints', []):
+            errors.append(f'{web_asm_path}: WebSocket production source must compile in Unity')
+
+    manifest_path = root / 'Packages' / 'manifest.json'
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding='utf-8-sig'))
+        if manifest.get('dependencies', {}).get('com.unity.nuget.newtonsoft-json') != '3.2.2':
+            errors.append(f'{manifest_path}: Project must own com.unity.nuget.newtonsoft-json 3.2.2')
+
     assets = root / 'Assets'
     if assets.exists():
-        for dll in assets.rglob('Module.Communication.JsonRpc.dll'):
-            if imported(dll, assets):
-                errors.append(f'{dll}: duplicates the source-imported RPC core')
+        forbidden_dlls = {
+            'Module.Communication.JsonRpc.dll',
+            'Module.Communication.JsonRpc.WebSocket.dll',
+            'Module.Communication.Unity3D.dll',
+        }
+        for dll in assets.rglob('*.dll'):
+            if imported(dll, assets) and dll.name in forbidden_dlls:
+                errors.append(f'{dll}: duplicates a source-imported Communication module')
+
     return errors, active, excluded
 
 if __name__ == '__main__':
@@ -89,5 +125,5 @@ if __name__ == '__main__':
     for issue in issues:
         print('ERROR: ' + issue, file=sys.stderr)
     print(f'Static import scan: {active_count} active C# files; {excluded_count} intentionally excluded .NET files.')
-    print('This does not establish C# compilation, plugin resolution or Unity runtime compatibility.')
+    print('This does not establish C# compilation, package resolution or Unity runtime compatibility.')
     sys.exit(1 if issues else 0)

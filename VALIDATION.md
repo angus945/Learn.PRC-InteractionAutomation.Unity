@@ -1,19 +1,19 @@
-# Validation status: Unity source compatibility correction
+# Validation status
 
-Executed in the authoring environment: eight Python fixture tests for the Project
-import-policy checker. They cover supported syntax, file-scoped namespace rejection,
-unscoped test rejection, explicit .NET-test exclusion, duplicate RPC core DLL detection,
-generated obj detection, tilde sample exclusion and obsolete DLL references.
+Communication composition is now source-first:
 
-These fixtures are synthetic and do not establish that the complete repository builds.
-The checker is a policy scanner, not a C# parser/compiler. Run it on the initialized
-working tree, then perform actual .NET and Unity validation.
+- Module.Communication.JsonRpc: source.
+- Module.Communication.JsonRpc.WebSocket: source.
+- Module.Communication.Unity3D: source.
+- com.unity.nuget.newtonsoft-json 3.2.2: Project-owned third-party package.
 
-Not executed: dotnet restore/build/test, Unity source compile, EditMode/PlayMode tests,
-transport plugin provisioning, runtime networking, IL2CPP, AOT or platform validation.
-No .NET SDK or Unity Editor is installed in the authoring environment. An SDK-download
-attempt failed DNS resolution. No test/compile success is inferred from committed code.
+StreamJsonRpc and its transitive runtime dependency graph are no longer part of the
+communication stack.
 
-The changes do not create a Unity project skeleton, configure a scene, import binaries,
-or delete local generated files. Third-party/runtime assembly resolution is a separate
-Host integration step, not a consequence of using C# 9 syntax.
+The Project policy checker was updated to reject Communication module DLL duplicates,
+WebSocket Unity exclusion, missing JsonRpc source reference, wrong Newtonsoft assembly
+reference and missing Newtonsoft package ownership.
+
+The authoring environment does not contain Unity Editor or the .NET SDK, so actual C#
+compilation, package restore, EditMode/PlayMode tests and runtime WebSocket exchange were
+not executed here. Static policy checks are not execution evidence.
