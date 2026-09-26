@@ -3,6 +3,9 @@
     "rootNamespace": "Project.RpcLab.Runtime",
     "references": [
         "Project.RpcLab.Contracts",
+        "Module.Communication.JsonRpc",
+        "Module.Communication.JsonRpc.WebSocket",
+        "Module.Communication.Unity3D",
         "Unity.TextMeshPro",
         "UnityEngine.UI"
     ],

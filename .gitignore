@@ -16,3 +16,4 @@ TestResults/
 *.suo
 .DS_Store
 Thumbs.db
+*.csproj
