@@ -896,6 +896,7 @@ GameObject:
   - component: {fileID: 1163598001}
   - component: {fileID: 1163598002}
   - component: {fileID: 1163598003}
+  - component: {fileID: 1163598004}
   m_Layer: 0
   m_Name: Probe
   m_TagString: Untagged
@@ -976,12 +977,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1163597996}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74697fcdc9e32e24e824a822043c6aa2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicToggleExperimentProbe
   stateProbe: {fileID: 36762818}
+--- !u!114 &1163598004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1163597996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f6476d76ef8bc41846f4eb0c62ed51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionRunnerProbe
+  interactionCamera: {fileID: 1134976234}
+  buttonClickCounter: {fileID: 11310483}
+  toggleStateProbe: {fileID: 36762818}
 --- !u!1 &1344203428
 GameObject:
   m_ObjectHideFlags: 0
