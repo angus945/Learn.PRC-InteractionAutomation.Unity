@@ -88,6 +88,16 @@ public sealed class VirtualMouseClickSeparationProbe :
         InteractionTargetSnapshot target =
             selected.Value;
 
+        if (target.Bounds.Space !=
+            InteractionCoordinateSpace.ApplicationSpace)
+        {
+            Debug.LogError(
+                $"Target '{TargetId}' must expose ApplicationSpace bounds. " +
+                $"Actual={target.Bounds.Space}");
+
+            yield break;
+        }
+
         targetCenter =
             target.Bounds.Center;
 
@@ -148,7 +158,7 @@ public sealed class VirtualMouseClickSeparationProbe :
         //
 
         InteractionPoint resetPoint =
-            InteractionPoint.FromScreenTopLeft(
+            InteractionPoint.FromApplicationTopLeft(
                 20,
                 20);
 
@@ -262,7 +272,7 @@ public sealed class VirtualMouseClickSeparationProbe :
         //
 
         InteractionPoint resetPointC =
-            InteractionPoint.FromScreenTopLeft(
+            InteractionPoint.FromApplicationTopLeft(
                 20,
                 20);
 
@@ -399,7 +409,7 @@ public sealed class VirtualMouseClickSeparationProbe :
                 input.Mouse.position.ReadValue();
 
             InteractionPoint actual =
-                UnityScreenCoordinates.ToCanonical(
+                UnityApplicationCoordinates.ToApplication(
                     unityPosition,
                     Screen.height);
 
