@@ -103,8 +103,11 @@ Repo：
 Project 固定 revision：
 
 ```text
-ea8e95b92171132a3f23bd9bb68fdd57663ccbcd
+b660e088a1f37948ed3c9b9cecbdaf47b2071b17
 ```
+
+目前 coordinate contract 已固定為 top-left origin、+X right、+Y down。
+`IPhysicalInputDriver` completion semantics 亦已明確定義為「input 已提交給 host input system」，不代表 host / UI / gameplay 已處理。
 
 目前提供三個基礎 Module：
 
@@ -148,24 +151,27 @@ Repo：
 Project 固定 revision：
 
 ```text
-31010b2719e8def88d3ec2a32cea6310c41be8b0
+16da7f4567b4a6f30a5c51c7c60e0fd69af857a2
 ```
 
-目前只完成最小 repository 初始化。
-
-**尚未實作 Unity adapter。**
-
-這是接下來主要工作的 repo。
-
-預期逐步加入：
+目前已包含：
 
 ```text
 Workspace.InteractionAutomation.Unity3D
 │
+├─ Module.InteractionAutomation.Coordinates.Unity3D
+│  └─ UnityScreenCoordinates
+│
 ├─ Module.InteractionAutomation.Targets.Unity3D
+│  ├─ InteractionTargetBinding
+│  ├─ UnityInteractionTargetSource
+│  └─ UnityUiScreenGeometry
 │
 └─ Module.InteractionAutomation.PhysicalInput.Unity3D
+   └─ UnityPhysicalInputDriver
 ```
+
+目前已完成 target discovery、UI screen geometry、canonical ↔ Unity screen conversion、Virtual Mouse 建立與 pointer move submission。Physical Input PlayMode test 已開始驗證 queued input 在 Unity lifecycle 推進後可由 Mouse state 觀察。
 
 不要一開始就建立大型 Unity automation framework。
 
@@ -923,18 +929,37 @@ Reusable capability → Module / Workspace
 
 直接從：
 
-# `EXP-IA-001A：建立第一個 Unity Interaction Target`
+# `EXP-IA-001C：確認 EventSystem 能觀察 Virtual Pointer`
 
-開始。
+繼續。
 
-第一個 Chat 任務建議是：
+目前已確認的責任邊界：
 
-> 查看目前 `Workspace.InteractionAutomation` 的 `Coordinates`、`Targets` contracts，以及空的 `Workspace.InteractionAutomation.Unity3D`。  
-> 從 EXP-IA-001A 開始，一步一步教我建立：
->
-> `InteractionTargetBinding → UnityInteractionTargetSource → IInteractionTargetSource → InteractionTargetSnapshot`
->
-> 第一版只支援 uGUI Button，而且先只驗證 target discovery；不要做 physical input、RPC、Verification 或 Monkey。
+```text
+MovePointerAsync completion
+    =
+input submission completed
+
+!= InputSystem processing completed
+!= EventSystem processing completed
+!= gameplay behavior completed
+```
+
+下一步應驗證：
+
+```text
+Canonical InteractionPoint
+    ↓
+UnityPhysicalInputDriver
+    ↓
+Virtual Mouse event queued
+    ↓
+Unity Input System processes event
+    ↓
+InputSystemUIInputModule / EventSystem observes pointer
+```
+
+暫時不要進 PointerDown / PointerUp click sequence，也不要建立 generic synchronization framework。
 
 ---
 
@@ -943,33 +968,38 @@ Reusable capability → Module / Workspace
 ```text
 [完成]
 Workspace.InteractionAutomation 基礎 contracts
-Workspace.InteractionAutomation.Unity3D repo 建立
-兩個 workspace 都以 submodule 安裝進 Project
-
-[下一步]
+Canonical coordinate contract
 EXP-IA-001A Target Discovery
+EXP-IA-001B UI Target Geometry
+Virtual Mouse device 建立
+Canonical Screen → Unity Screen conversion
+MovePointerAsync input submission
+IPhysicalInputDriver completion semantics
+Physical Input PlayMode processing verification test added
+
+[進行中]
+EXP-IA-001C Virtual Pointer
+- 新增的 Physical Input PlayMode test 尚待在 Unity Test Runner 執行確認
+- EventSystem / InputSystemUIInputModule observation 尚待驗證
 
 [尚未]
-UI Bounds
-Physical Input
+Pointer Down / Up
 Button Automation Click
+Toggle
 World Target
 Monkey
 Verification
 Remote Communication
 ```
 
-Project 最新加入 Unity3D workspace 的 commit：
+目前 Project pins：
 
 ```text
-b4f9652f
-Add Unity3D interaction automation workspace submodule
+Workspace.InteractionAutomation
+b660e088a1f37948ed3c9b9cecbdaf47b2071b17
+
+Workspace.InteractionAutomation.Unity3D
+16da7f4567b4a6f30a5c51c7c60e0fd69af857a2
 ```
 
-目前 `Workspace.InteractionAutomation.Unity3D` 固定：
-
-```text
-31010b2719e8def88d3ec2a32cea6310c41be8b0
-```
-
-下一個 Chat 不需要重新研究 WebSocket 或 Communication，直接從 Target Discovery 開始。
+下一個工作不要重新研究 WebSocket 或 Communication，繼續 EXP-IA-001C 的 EventSystem pointer observation。
