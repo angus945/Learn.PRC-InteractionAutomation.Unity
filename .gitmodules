@@ -17,3 +17,8 @@
 	path = Assets/CraftyRacoon/Workspace.InteractionAutomation
 	url = https://github.com/crafty-racoon/Workspace.InteractionAutomation.git
 	update = checkout
+
+[submodule "Workspace.InteractionAutomation.Unity3D"]
+	path = Assets/CraftyRacoon/Workspace.InteractionAutomation.Unity3D
+	url = https://github.com/crafty-racoon/Workspace.InteractionAutomation.Unity3D.git
+	update = checkout
