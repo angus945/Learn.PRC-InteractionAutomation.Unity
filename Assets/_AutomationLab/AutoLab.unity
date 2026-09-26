@@ -132,6 +132,8 @@ GameObject:
   - component: {fileID: 11310480}
   - component: {fileID: 11310479}
   - component: {fileID: 11310478}
+  - component: {fileID: 11310482}
+  - component: {fileID: 11310483}
   m_Layer: 5
   m_Name: ConfirmButton
   m_TagString: Untagged
@@ -171,7 +173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1aa9d7d621b2e2847ae4353117a5e1be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
-  targetId: abc
+  targetId: button.confirm
   role: 1
   capabilities: 1
 --- !u!114 &11310479
@@ -217,7 +219,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 11310480}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 11310483}
+        m_TargetAssemblyTypeName: ButtonClickCounter, Assembly-CSharp
+        m_MethodName: HandleClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &11310480
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,6 +270,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 11310476}
   m_CullTransparentMesh: 1
+--- !u!114 &11310482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11310476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68ae36cb557e4c743ba7ec672fe78658, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PointerHoverProbe
+--- !u!114 &11310483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11310476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2639e914af5cbf4cae75e944076ca98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonClickCounter
 --- !u!1 &477531877
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,8 +533,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1163597998}
   - component: {fileID: 1163597999}
+  - component: {fileID: 1163598000}
+  - component: {fileID: 1163598001}
+  - component: {fileID: 1163598002}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Probe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -524,11 +565,50 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1163597996}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d06698158c1fd7b4ab9aa60a101aa60a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TargetDiscoveryProbe
+--- !u!114 &1163598000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1163597996}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48a35d79f5aa4274aa9c753e7722a784, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirtualMouseProbe
+--- !u!114 &1163598001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1163597996}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22b7f98d6fc08014f97547ef0099eb97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirtualMouseMoveProbe
+  confirmButtonHoverProbe: {fileID: 11310482}
+--- !u!114 &1163598002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1163597996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c58e58d80c23b144caa2d40c87543030, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VirtualMouseClickSeparationProbe
+  clickCounter: {fileID: 11310483}
+  hoverProbe: {fileID: 11310482}
 --- !u!1 &1344203428
 GameObject:
   m_ObjectHideFlags: 0
@@ -539,7 +619,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1344203431}
   - component: {fileID: 1344203430}
-  - component: {fileID: 1344203429}
+  - component: {fileID: 1344203432}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -547,26 +627,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1344203429
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1344203428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.StandaloneInputModule
-  m_SendPointerHoverToParent: 1
-  m_HorizontalAxis: Horizontal
-  m_VerticalAxis: Vertical
-  m_SubmitButton: Submit
-  m_CancelButton: Cancel
-  m_InputActionsPerSecond: 10
-  m_RepeatDelay: 0.5
-  m_ForceModuleActive: 0
 --- !u!114 &1344203430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -597,6 +657,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1344203432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344203428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
+  m_SendPointerHoverToParent: 1
+  m_MoveRepeatDelay: 0.5
+  m_MoveRepeatRate: 0.1
+  m_XRTrackingOrigin: {fileID: 0}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_DeselectOnBackgroundClick: 1
+  m_PointerBehavior: 2
+  m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
 --- !u!1 &2014078360
 GameObject:
   m_ObjectHideFlags: 0
@@ -800,8 +891,8 @@ RectTransform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1344203431}
   - {fileID: 1134976235}
   - {fileID: 2014078362}
   - {fileID: 1163597998}
   - {fileID: 2116377753}
-  - {fileID: 1344203431}

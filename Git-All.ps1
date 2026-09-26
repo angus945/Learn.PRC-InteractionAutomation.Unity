@@ -20,7 +20,12 @@ function Get-SubmodulePaths() {
     return @($SubmodulePaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
 
+function Enable-GitLongPaths([string]$RepositoryPath) {
+    Invoke-GitCommand $RepositoryPath @('config', 'core.longpaths', 'true') | Out-Null
+}
+
 function Switch-SubmoduleToMainBranch([string]$RepositoryPath, [string]$RepositoryName) {
+    Enable-GitLongPaths $RepositoryPath
     $BranchName = & git -C $RepositoryPath branch --show-current
 
     if ($LASTEXITCODE -ne 0) {
@@ -78,6 +83,8 @@ function Commit-And-PushAll() {
     $CommitMessage = Get-CommitMessage
     $SubmodulePaths = Get-SubmodulePaths
 
+    Enable-GitLongPaths $RepositoryRoot
+
     foreach ($SubmodulePath in $SubmodulePaths) {
         $SubmoduleRepositoryPath = Join-Path $RepositoryRoot $SubmodulePath
         Switch-SubmoduleToMainBranch $SubmoduleRepositoryPath $SubmodulePath | Out-Null
@@ -88,6 +95,7 @@ function Commit-And-PushAll() {
 }
 
 function Pull-All() {
+    Enable-GitLongPaths $RepositoryRoot
     Write-Host "`n[Root repository] Pulling..." -ForegroundColor Cyan
     Invoke-GitCommand $RepositoryRoot @('pull', '--recurse-submodules')
     Invoke-GitCommand $RepositoryRoot @('submodule', 'sync', '--recursive')
