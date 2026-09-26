@@ -1,35 +1,31 @@
 # Learn.PRC-InteractionAutomation.Unity
 
 Unity JSON-RPC 與 InteractionAutomation 的學習 Host。
+本次修正 C# 版本與 source/DLL 匯入邊界；尚未建立場景、端點或完整可執行專案。
 
-**目前只完成 dependency source 掛載，不是已組裝、可直接執行的 Unity 專案。**
-本階段不建立場景、網路端點、Monkey Framework 或產品遠端方法。
-
-## Source layout
+## 固定來源
 
 ```text
-Assets/
-└─ CraftyRacoon/
-   ├─ Module.Communication.JsonRpc/             # submodule
-   ├─ Module.Communication.JsonRpc.WebSocket/   # submodule
-   ├─ Module.Communication.Unity3D/             # submodule
-   └─ Workspace.InteractionAutomation/          # submodule
+Assets/CraftyRacoon/
+├─ Module.Communication.JsonRpc/            # source assembly
+├─ Module.Communication.JsonRpc.WebSocket/  # SDK source checkout; Unity 使用預編譯 DLL
+├─ Module.Communication.Unity3D/            # source assembly
+└─ Workspace.InteractionAutomation/        # 三個 source assemblies
 ```
 
-四個目錄都是 Git submodule，並非複製的原始碼。
-Workspace.InteractionAutomation 內的 Coordinates、Targets、PhysicalInput
-由同一個 workspace checkout 提供，不另外複製或重複掛載。
-Playwright、Verification 與 gameplay integration 不在此階段加入。
+| Submodule | 固定 revision |
+|---|---|
+| Module.Communication.JsonRpc | 88298902cfbd04c7a7675aa4e9db4cf63d9a2221 |
+| Module.Communication.JsonRpc.WebSocket | ce0cb83c8c91dd393c6ef2eb3b55137b190ecf99 |
+| Module.Communication.Unity3D | 468782c93b6dd34c256580192604f8e5ed71a931 |
+| Workspace.InteractionAutomation | 8fbb1a5b9ee075cfd9729aaf87d03c34265e03ae |
 
-## 初始化
+Git tree 的 gitlink 是版本權威；此表只記錄本次更新，不是第二個 lock。
+來源皆為 Git submodule，沒有 source copy、mirror 或 nested dependency checkout。
 
-新 clone：
+## 更新本機
 
-```shell
-git clone --recurse-submodules https://github.com/angus945/Learn.PRC-InteractionAutomation.Unity.git
-```
-
-已 clone 的工作樹，在 repository 根目錄執行：
+先保留本機修改。在此 repository 根目錄執行：
 
 ```shell
 git pull --ff-only
@@ -38,37 +34,54 @@ git submodule update --init --recursive
 git submodule status --recursive
 ```
 
-必須具備各來源 repository 的 GitHub 存取權限；本 repo 的可見性不授予子模組存取權。
-初始化不修改來源 repository。
+不使用 --remote 追逐來源分支。若有本機 submodule 修改或未追蹤檔案阻擋更新，
+先檢視、保存再處理；不要直接用 --force 或 git clean 丟棄工作。
+來源 repo 的存取權限仍需個別具備。
 
-## Source / version ownership
+## C# 與 assembly 邊界
 
-- 此 Project 的 Git tree gitlink 是 exact revision 的權威；`.gitmodules` 描述來源位置。
-- 初始化使用已提交的 commit，不使用 `git submodule update --remote` 追逐來源分支。
-- 更新來源版本時，由 Project 明確更新並提交 gitlink。
-- 每份 reusable source 只有一個 authoritative checkout，不建立 nested dependency checkout、copy 或 mirror。
-- `Assets/CraftyRacoon.meta` 與四個掛載根目錄的 `.meta` 由此 Project 擁有；submodule 內的檔案由來源 repo 擁有。
+Unity 6 的 source baseline 是 C# 9，不以修改 IDE 產生的 csproj 或 csc.rsp 升級 compiler。
+InteractionAutomation 的 production namespace 已改成 block scope，並固定 LangVersion 9.0。
+RPC core 原本就是 C# 9，現在有 canonical asmdef。Unity adapter 的 runtime、test 與 sample
+已改成引用這個 source assembly，不再要求 Module.Communication.JsonRpc.dll。
+因此不要另外匯入核心 DLL。核心 AssemblyInfo 在 SDK/Unity build 共用 0.1.0.0 版本。
 
-## Unity 組裝仍待完成
+三個 InteractionAutomation Module 各自有 src/asmdef，Targets/PhysicalInput 僅依賴 Coordinates。
+.NET SDK/NUnit 專用 test/ 以 !UNITY_5_3_OR_NEWER 的 asmdef 排除，不會漏進 Assembly-CSharp；
+dotnet test 仍可執行。真正的 Unity Shared/PlayMode tests 仍留在 Unity adapter 的測試 assembly。
+既有 Unity adapter .meta GUID 未重建。
 
-本提交尚未建立 `Packages/manifest.json`、`ProjectSettings/ProjectVersion.txt` 或 scene，
-也未執行 Unity 編譯、NuGet restore、DLL 發布或 runtime 驗證。
+## WebSocket 還需要什麼
 
-Module.Communication.Unity3D 目前的 asmdef 要求 Project 提供
-`Module.Communication.JsonRpc.dll`。RPC core 與 WebSocket 應依各模組文件編譯為
-.NET Standard 2.1 的 managed plugin；不能把 net8.0 DLL 當成 Unity plugin。
-.NET 原始碼與測試檔直接掛進 Assets 不會自動完成 assembly 隔離，
-本提交尚未配置這個隔離，也未匯入第三方 DLL。
-因此必須先處理 Project 的 source/DLL 匯入邊界與 assembly references，
-再進行 Unity 編譯；不能同時編譯同一個模組的 source 與 DLL。
+WebSocket production 也已改成 C# 9，但其 Unity 整合仍採用預編譯 netstandard2.1 transport。
+其 src/test asmdef 明確排除 SDK 原始碼；排除不代表已經裝好、可執行 WebSocket。
+Project 仍須提供 transport DLL 與經檢查的第三方 managed dependencies。不要用 net8.0 DLL，
+也不要從輸出目錄再次匯入 RPC core DLL，或盲目複製 System.* / 重複 Newtonsoft.Json。
+這些依賴尚未在本次提交中下載、編譯或匯入。
 
-Host 的 build/composition 由 Project 明確供應以下實際路徑：
+Directory.Build.props 由這個 Project 提供確定的 dependency roots，並使用 .NET SDK 8+
+artifacts layout 將 bin/obj 放到 repo root 的 .artifacts，而不是 Assets/submodule 內。
+既有本機 bin/obj 不會自動消失；需要先確認是產生物再移除，檢查器只報告、不刪除。
 
-| Property | 來源目錄（相對於 repo root） |
-|---|---|
-| `JsonRpcModuleRoot` | `Assets/CraftyRacoon/Module.Communication.JsonRpc` |
-| `JsonRpcWebSocketModuleRoot` | `Assets/CraftyRacoon/Module.Communication.JsonRpc.WebSocket` |
-| `InteractionAutomationWorkspaceRoot` | `Assets/CraftyRacoon/Workspace.InteractionAutomation` |
+例如從 repo root 建置 transport（需要 .NET 8 或更新 SDK）：
 
-傳給 MSBuild 前由 Project 解析為絕對路徑；本提交不猜測 Unity 安裝位置，
-也不新增會自行下載依賴或啟動通訊的流程。
+```shell
+dotnet build Assets/CraftyRacoon/Module.Communication.JsonRpc.WebSocket/src/Module.Communication.JsonRpc.WebSocket.csproj -c Release -f netstandard2.1
+```
+
+此命令只建置，不自動安裝 DLL、不改 Unity manifest、不啟動網路。
+
+## 靜態檢查與限制
+
+```shell
+python scripts/validate-unity-imports.py
+python scripts/test_import_policy.py
+```
+
+檢查器掃描明確 assembly 邊界、高版本語法、SDK test 排除與核心 DLL 重複匯入。
+其 8 個 fixture 自測已執行通過；這不是 C# 編譯、Unity 匯入或 transport integration 測試。
+作者環境沒有 .NET SDK/Unity Editor，未執行 restore/build/dotnet test/Unity PlayMode。
+
+遠端 repo 目前仍未提供 ProjectSettings/ProjectVersion.txt、Packages/manifest.json 或 scene。
+本次沒有猜測或覆寫使用者本機的 Unity 版本/專案設定，亦未加入 Playwright、Verification
+或 Monkey Framework。完整 Host 組裝與 Unity/IL2CPP 相容性仍需實際驗證。

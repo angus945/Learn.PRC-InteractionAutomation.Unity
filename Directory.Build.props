@@ -1,0 +1,11 @@
+<Project>
+  <!-- This outer Project owns concrete source locations and SDK output paths. -->
+  <PropertyGroup>
+    <JsonRpcModuleRoot Condition="'$(JsonRpcModuleRoot)' == ''">$(MSBuildThisFileDirectory)Assets/CraftyRacoon/Module.Communication.JsonRpc</JsonRpcModuleRoot>
+    <JsonRpcWebSocketModuleRoot Condition="'$(JsonRpcWebSocketModuleRoot)' == ''">$(MSBuildThisFileDirectory)Assets/CraftyRacoon/Module.Communication.JsonRpc.WebSocket</JsonRpcWebSocketModuleRoot>
+    <InteractionAutomationWorkspaceRoot Condition="'$(InteractionAutomationWorkspaceRoot)' == ''">$(MSBuildThisFileDirectory)Assets/CraftyRacoon/Workspace.InteractionAutomation</InteractionAutomationWorkspaceRoot>
+    <!-- .NET SDK 8+: never generate bin/obj C# or DLLs inside Unity's Assets. -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath Condition="'$(ArtifactsPath)' == ''">$(MSBuildThisFileDirectory).artifacts</ArtifactsPath>
+  </PropertyGroup>
+</Project>

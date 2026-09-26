@@ -7,8 +7,10 @@
 /[Uu]ser[Ss]ettings/
 /.vs/
 /.idea/
+/.artifacts/
 **/bin/
 **/obj/
+**/__pycache__/
 TestResults/
 *.user
 *.suo
