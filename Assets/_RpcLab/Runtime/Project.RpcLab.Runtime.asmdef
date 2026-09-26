@@ -1,0 +1,11 @@
+{
+    "name": "Project.RpcLab.Runtime",
+    "rootNamespace": "Project.RpcLab.Runtime",
+    "references": [
+        "Project.RpcLab.Contracts",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": false,
+    "noEngineReferences": false
+}

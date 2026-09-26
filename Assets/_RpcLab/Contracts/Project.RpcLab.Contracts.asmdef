@@ -1,0 +1,7 @@
+{
+    "name": "Project.RpcLab.Contracts",
+    "rootNamespace": "Project.RpcLab.Contracts",
+    "references": [],
+    "autoReferenced": false,
+    "noEngineReferences": true
+}
