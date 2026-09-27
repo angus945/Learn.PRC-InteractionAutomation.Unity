@@ -53,17 +53,12 @@ public sealed class InteractionRunnerProbe :
         physicalInput =
             new UnityPhysicalInputDriver();
 
-        var targetSource =
-            AutomationLabInteractionComposition
-                .CreateTargetSource(
-                    interactionCamera);
-
         runner =
-            new InteractionRunner(
-                targetSource,
-                new SnapshotInteractionAvailabilityEvaluator(),
-                physicalInput,
-                inputProcessingBoundary);
+            AutomationLabInteractionComposition
+                .CreateRunner(
+                    interactionCamera,
+                    physicalInput,
+                    inputProcessingBoundary);
 
         yield return null;
 
@@ -74,9 +69,10 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER BUTTON START");
 
         Task buttonClick =
-            runner.PointerClickAsync(
-                    new InteractionTargetId(
-                        "button.confirm"))
+            runner.ExecuteAsync(
+                    new PointerClickRequest(
+                        new InteractionTargetId(
+                            "button.confirm")))
                 .AsTask();
 
         yield return WaitFor(buttonClick);
@@ -99,9 +95,10 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER TOGGLE START");
 
         Task toggleClick =
-            runner.PointerClickAsync(
-                    new InteractionTargetId(
-                        "toggle.music"))
+            runner.ExecuteAsync(
+                    new PointerClickRequest(
+                        new InteractionTargetId(
+                            "toggle.music")))
                 .AsTask();
 
         yield return WaitFor(toggleClick);
@@ -129,11 +126,12 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER DRAG START");
 
         Task drag =
-            runner.PointerDragAsync(
-                    new InteractionTargetId(
-                        "button.confirm"),
-                    new InteractionTargetId(
-                        "toggle.music"))
+            runner.ExecuteAsync(
+                    new PointerDragRequest(
+                        new InteractionTargetId(
+                            "button.confirm"),
+                        new InteractionTargetId(
+                            "toggle.music")))
                 .AsTask();
 
         yield return WaitFor(drag);
@@ -164,12 +162,13 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER SCROLL START");
 
         Task scroll =
-            runner.PointerScrollAsync(
-                    new InteractionTargetId(
-                        "toggle.music"),
-                    new ScrollDelta(
-                        horizontal: 0,
-                        vertical: -1))
+            runner.ExecuteAsync(
+                    new PointerScrollRequest(
+                        new InteractionTargetId(
+                            "toggle.music"),
+                        new ScrollDelta(
+                            horizontal: 0,
+                            vertical: -1)))
                 .AsTask();
 
         yield return WaitFor(scroll);
@@ -197,9 +196,10 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER HOVER START");
 
         Task hover =
-            runner.PointerHoverAsync(
-                    new InteractionTargetId(
-                        "button.confirm"))
+            runner.ExecuteAsync(
+                    new PointerHoverRequest(
+                        new InteractionTargetId(
+                            "button.confirm")))
                 .AsTask();
 
         yield return WaitFor(hover);
@@ -229,9 +229,10 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER DOUBLE CLICK START");
 
         Task doubleClick =
-            runner.PointerDoubleClickAsync(
-                    new InteractionTargetId(
-                        "button.confirm"))
+            runner.ExecuteAsync(
+                    new PointerDoubleClickRequest(
+                        new InteractionTargetId(
+                            "button.confirm")))
                 .AsTask();
 
         yield return WaitFor(doubleClick);
@@ -259,10 +260,11 @@ public sealed class InteractionRunnerProbe :
         Debug.Log("RUNNER HOLD START");
 
         Task hold =
-            runner.PointerHoldAsync(
-                    new InteractionTargetId(
-                        "button.confirm"),
-                    TimeSpan.FromMilliseconds(200))
+            runner.ExecuteAsync(
+                    new PointerHoldRequest(
+                        new InteractionTargetId(
+                            "button.confirm"),
+                        TimeSpan.FromMilliseconds(200)))
                 .AsTask();
 
         yield return WaitFor(hold);

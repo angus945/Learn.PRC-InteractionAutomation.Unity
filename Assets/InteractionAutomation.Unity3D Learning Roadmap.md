@@ -126,6 +126,28 @@ Capabilities =
 
 This deliberately proves that target Kind does not dispatch interaction behavior.
 
+## Typed request registry
+
+Pointer execution now uses typed requests and an immutable registry:
+
+```text
+Pointer*Request
+↓
+InteractionRunner.ExecuteAsync<TRequest>
+↓
+InteractionRegistry
+↓
+IInteractionHandler<TRequest>
+↓
+Concrete Pointer*Interaction
+```
+
+Registry keys are request types, never `PhysicalInteractionCapabilities`.
+
+`AutomationLabInteractionComposition` is the composition root. It creates all six pointer handlers, registers them through `PointerInteractionRegistryProfile.CreateBuilder()`, validates completeness at `Build()`, and passes the built registry into `InteractionRunner`.
+
+Runtime code does not resolve handlers directly.
+
 ## Acceptance
 
 Drag runtime acceptance: **PASS**
@@ -144,7 +166,7 @@ Normal Unity Input System / EventSystem route observed.
 
 ```text
 Workspace.InteractionAutomation
-7f38feb3db280312327b14c572724019e28f5d8d
+3336dded65d6f640b6e22e2061d57465fb5a1412
 
 Workspace.InteractionAutomation.Unity3D
 bfce40cd0ac7b99020eecf6320d6f91493470f3e
