@@ -174,86 +174,39 @@ Workspace.InteractionAutomation.Unity3D
 
 # Phase 11 — Observation / Verification
 
-Status: **P11.2 IMPLEMENTED — runtime acceptance pending**
+Status: **P11.3 IMPLEMENTED — runtime acceptance pending**
 
-The full `Workspace.Verification` repository is installed as one project submodule:
+Installed verification workspace:
 
 ```text
 Assets/CraftyRacoon/Workspace.Verification
-```
-
-Pinned revision:
-
-```text
 c85081e463233f92b014b19faec92b8d66b1e3a8
 ```
 
-P11.1 uses only `Module.Verification.Oracle`.
-
-First vertical slice:
+Unity integration revision:
 
 ```text
-PointerDragRequest
-↓
+Workspace.InteractionAutomation.Unity3D
+599f676111f59388d2375adc3644a81f524ee138
+```
+
+## Boundaries
+
+```text
 InteractionRunner
-↓
-Unity EventSystem behavior
-↓
-UnityPointerDragObserver + UnityPointerDropObserver
-↓
-immutable Unity host observations
-↓
-project-owned DragObservation
-↓
-OracleSet<DragObservation>
-    ├─ DragLifecycleOracle
-    └─ DropObservedOracle
-↓
-EvaluationReport
-```
+= execute typed interaction requests
 
-The interaction runner does not reference Verification. The probes collect product/UI behavior; `DragObservation` snapshots those observations; Oracle alone owns the pass/fail judgment.
-
-`SystemFact`, `SystemFact.Observability`, `Diagnostics`, `Invariant`, `TraceBuffer`, `StateSnapshot`, `Evidence`, and `RuntimeControl` remain installed but unused in this slice.
-
-Expected P11.1 Drag output:
-
-```text
-POINTER DRAG PASS
-Observation captured separately from Oracle judgment.
-```
-
-Execution remains separate from product-specific correctness assertions.
-
-
-## Unity observation boundary
-
-Reusable EventSystem observation moved to `Workspace.InteractionAutomation.Unity3D`:
-
-```text
 Module.InteractionAutomation.Observation.Unity3D
-├─ UnityPointerClickObserver
-├─ UnityPointerDragObserver
-├─ UnityPointerDropObserver
-├─ UnityPointerHoverObserver
-├─ UnityPointerPressObserver
-└─ UnityPointerScrollObserver
-```
+= capture what Unity EventSystem observed
 
-Each observer captures an immutable `UnityPointer*Observation`. These adapters report what Unity observed and contain no Oracle, PASS/FAIL, product expectation, or logging policy.
-
-AutoLab still owns product probes, scenario observations, and Oracle expectations.
-
-
-## P11.2 verification ownership
-
-Reusable Unity-host expectations now live in:
-
-```text
 Module.InteractionAutomation.Verification.Unity3D
+= judge reusable Unity host contracts
+
+AutoLab Verification
+= judge AutoLab-specific product/scenario expectations
 ```
 
-Reusable Oracle profiles cover:
+Reusable Unity host verification covers:
 
 ```text
 Drag lifecycle
@@ -263,7 +216,7 @@ Double-click EventSystem semantics
 Hold press/release lifecycle
 ```
 
-AutoLab retains only project-specific verification:
+AutoLab retains only:
 
 ```text
 button.confirm product callback
@@ -271,4 +224,66 @@ toggle.music product state change
 button.confirm → toggle.music drop expectation
 ```
 
-The obsolete generic `VirtualMouseProbe` was removed because virtual mouse construction is already covered by `UnityPhysicalInputDriverTests.Constructor_AddsOperationalVirtualMouse`.
+## Scenario orchestration
+
+`InteractionRunnerProbe` is now only the composition/sequencing entry point.
+
+Concrete AutoLab scenarios:
+
+```text
+AutoLabButtonClickScenario
+AutoLabToggleClickScenario
+AutoLabDragScenario
+AutoLabScrollScenario
+AutoLabHoverScenario
+AutoLabDoubleClickScenario
+AutoLabHoldScenario
+```
+
+Each scenario owns one vertical slice:
+
+```text
+Arrange
+→ Execute typed request
+→ allow Unity processing
+→ Capture immutable observation
+→ Evaluate Oracle
+→ expose Passed
+```
+
+No generic `IScenario`, scenario registry, or scenario pipeline has been introduced.
+
+## Legacy cleanup
+
+Removed experiments already superseded by current formal execution scenarios:
+
+```text
+TargetDiscoveryProbe
+VirtualMouseClickSeparationProbe
+MusicToggleExperimentProbe
+```
+
+Previously removed:
+
+```text
+VirtualMouseProbe
+```
+
+Still retained because they cover distinct AutoLab contracts:
+
+```text
+VirtualMouseEventSystemProbe
+= virtual/physical pointer separation
+
+WorldTargetDiscoveryProbe
+= AutoLab chest.001 renderer geometry
+```
+
+Expected final runtime marker:
+
+```text
+PHASE 11 OBSERVATION / VERIFICATION PASS
+Execution / observation / host verification / AutoLab product verification are separated.
+```
+
+After runtime acceptance, Phase 11 is complete and the next phase is deterministic Monkey execution.
