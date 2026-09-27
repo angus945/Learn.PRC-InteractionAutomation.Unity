@@ -14,32 +14,37 @@ public static class AutomationLabInteractionComposition
     public static UnityInteractionAutomationRuntime CreateRuntime(
         Camera interactionCamera,
         IPhysicalInputDriver physicalInput,
-        IHostInputProcessingBoundary inputProcessing)
+        IHostInputProcessingBoundary inputProcessing,
+        IInteractionAvailabilityEvaluator projectAvailability = null)
     {
         if (physicalInput == null)
             throw new ArgumentNullException(nameof(physicalInput));
         if (inputProcessing == null)
             throw new ArgumentNullException(nameof(inputProcessing));
 
-        // The Project chooses adapters; the Framework owns pointer composition.
-        return UnityInteractionAutomationBuilder
+        // Product policy is added to, rather than substituted for, structural checks.
+        var builder = UnityInteractionAutomationBuilder
             .Create()
             .UseTargetSource(CreateTargetSource(interactionCamera))
             .UseAvailability(new SnapshotInteractionAvailabilityEvaluator())
             .UsePhysicalInput(physicalInput)
-            .UseInputProcessingBoundary(inputProcessing)
-            .Build();
+            .UseInputProcessingBoundary(inputProcessing);
+        if (projectAvailability != null)
+            builder.AddAvailabilityPolicy(projectAvailability);
+        return builder.Build();
     }
 
     public static InteractionRunner CreateRunner(
         Camera interactionCamera,
         IPhysicalInputDriver physicalInput,
-        IHostInputProcessingBoundary inputProcessing)
+        IHostInputProcessingBoundary inputProcessing,
+        IInteractionAvailabilityEvaluator projectAvailability = null)
     {
         return CreateRuntime(
             interactionCamera,
             physicalInput,
-            inputProcessing).Runner;
+            inputProcessing,
+            projectAvailability).Runner;
     }
 
     public static UnityInteractionTargetSource CreateTargetSource(

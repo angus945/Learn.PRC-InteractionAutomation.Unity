@@ -8,14 +8,14 @@ This Project owns the integration sequence, source locations, exact revision pin
 
 | Stage | Scope | Status |
 | --- | --- | --- |
-| IA-1 | Canonical Framework extraction, Timing separation, shared Unity composition and AutoLab consumer migration | Implemented; Unity/.NET runtime acceptance pending |
-| IA-2 | Capability-aware availability, project permission and execution revalidation | Planned |
-| IA-3 | uGUI hit-test/occlusion and current UI-state availability | Planned |
+| IA-1 | Canonical Framework extraction, Timing separation, shared Unity composition and AutoLab consumer migration | COMPLETE — user reported all acceptance checks passed on 2026-09-27 |
+| IA-2 | Capability-aware availability, project permission and execution revalidation | Implemented; new Unity/.NET execution acceptance pending |
+| IA-3 | uGUI hit-test/occlusion and current UI-state availability | DEFERRED at the user's explicit request; not part of IA-2 |
 | IA-4 | Dynamic view resolution, multiple cameras and camera-stack acceptance | Planned |
 | IA-5 | Additive scenes, transitions, readiness, cancellation and target incarnation lifecycle | Planned |
 | IA-6 | Adopter defaults, target authoring ergonomics and acceptance matrix | Planned |
 
-The earlier P10/P11/P12 AutoLab baseline was reported runtime-passing by the user before extraction. That report is historical evidence, not proof that the migrated assemblies compile or run. The older learning roadmap remains phase history; this file tracks production-integration work.
+The earlier P10/P11/P12 AutoLab baseline was reported runtime-passing by the user before extraction. The user subsequently reported that all IA-1 checks passed and requested IA-2 while deferring occlusion. These are user-reported acceptance records, not independently executed tests in the authoring environment. The older learning roadmap remains phase history; this file tracks production-integration work.
 
 ## IA-1 — Framework/source identity and adoption entrypoint
 
@@ -30,9 +30,9 @@ The earlier P10/P11/P12 AutoLab baseline was reported runtime-passing by the use
 
 The Project mounts all six repositories directly under `Assets/CraftyRacoon`. No old namespace aliases, bridge assemblies or source copies are used. `Directory.Build.props` supplies neutral Framework dependency-root properties; source owners retain their canonical asmdefs.
 
-### Revision set
+### IA-1 accepted revision set (historical)
 
-| Repository | Pinned revision |
+| Repository | Accepted revision |
 | --- | --- |
 | Workspace.InteractionAutomation | `666db89d7a9ebfe66c62d9a2a61589b629b726d8` |
 | Workspace.InteractionAutomation.Unity3D | `1da731004fdff13fb1034e8d1410ff32aef0a6fb` |
@@ -40,9 +40,9 @@ The Project mounts all six repositories directly under `Assets/CraftyRacoon`. No
 | Framework.InteractionAutomation.Monkey | `bc79acb0c54db41b132a69280f9af3290918c468` |
 | Framework.InteractionAutomation.Runner.Unity3D | `81c459c342d9acbfd4c280103d7fa5f57f187d76` |
 | Framework.InteractionAutomation.Monkey.Unity3D | `26ed9a0aed74f4cc8f7cdaa990c37e8b4f8b0031` |
-| Workspace.Verification (unchanged) | `c85081e463233f92b014b19faec92b8d66b1e3a8` |
+| Workspace.Verification | `c85081e463233f92b014b19faec92b8d66b1e3a8` |
 
-Project gitlinks are authoritative. Do not update with `--remote` when reproducing this stage.
+Project baseline: `ac4ce76aeae72e55c67a9e3840aa169759406020`. Current gitlinks are authoritative; the table above records the accepted IA-1 baseline, not current IA-2 pins. Do not update with `--remote` when reproducing a stage.
 
 ### AutoLab changes
 
@@ -52,16 +52,15 @@ Project gitlinks are authoritative. Do not update with `--remote` when reproduci
 
 The Monkey lifecycle adapter cancels on disable/destroy and disposes its device after awaited gesture cleanup. It never labels cancellation PASS. This is not acceptance of arbitrary scene-destructing clicks. The older P11 coroutine probe remains a stable-scene regression fixture, not a transition-lifetime implementation.
 
-### Verification performed during authoring
+### IA-1 authoring record and acceptance
 
-- The architecture checker's 12 positive/negative Python fixture tests passed.
-- GitHub compared the candidate Project commit against its parent; the existing HUD changed only its two namespace imports, and existing scenario sources changed only their Runner imports.
-- The scene diff was reviewed for retained script GUIDs and object references. Besides the Timing type identity, one quaternion negative-zero textual representation normalized to zero; the rotation values are equivalent.
-- No full initialized-checkout architecture scan, C# compilation, .NET test run, Unity EditMode/PlayMode test run or Player build was executed in the authoring environment. Unity Editor and the .NET SDK were unavailable. Remote source inspection and checker-fixture tests do not replace those checks.
+The IA-1 authoring record reported 12 passing positive/negative Python checker fixtures, reviewed namespace-only changes in existing scenarios/HUD, and reviewed the retained scene GUIDs. One quaternion negative-zero textual representation normalized to zero alongside the intended Timing type identity change.
 
-### Acceptance gate
+No full initialized-checkout architecture scan, C# compilation, .NET test run, Unity EditMode/PlayMode test run or Player build was executed in that authoring environment. The user later reported all IA-1 acceptance checks passed. This closes IA-1; it does not validate the new IA-2 code.
 
-Close Unity while updating this coordinated source revision set, then run from the Project root:
+### Regression gate retained for later stages
+
+Close Unity while updating a coordinated source revision set, then run from the Project root:
 
 ```shell
 git pull --ff-only
@@ -74,21 +73,51 @@ python scripts/test_import_policy.py
 python scripts/validate-unity-imports.py
 ```
 
-The new architecture checker checks active source/serialized identities, source-assembly presence, duplicate assemblies/GUIDs, Module-to-Framework reverse edges and assembly cycles. It is a static guard, not a compiler. Historical Markdown is not treated as active source.
+The architecture checker checks active source/serialized identities, source-assembly presence, duplicate assemblies/GUIDs, Module-to-Framework reverse edges and assembly cycles. It is a static guard, not a compiler. Historical Markdown is not treated as active source.
 
-Open Unity and regenerate the IDE project files. Require zero compile errors and zero missing scripts in `Assets/_AutomationLab/AutoLab.unity`. Run the new Framework/TI​ming tests available in Test Runner; then run AutoLab with seed 12345 and 25 iterations. Require six pointer actions, the configured seven coverage pairs, passing verification, and retained evidence. Run the existing P11 probe separately, not concurrently with Monkey. During a separate Monkey run, disable the probe during Hold/Drag and verify cleanup without PASS-on-cancellation. Record actual results before starting IA-2.
+Open Unity and regenerate IDE project files. Require zero compile errors and zero missing scripts in `Assets/_AutomationLab/AutoLab.unity`. Run Framework/Timing tests, then AutoLab with seed 12345 and 25 iterations. Require six pointer actions, seven coverage pairs, passing verification, and retained evidence. Run P11 separately, not concurrently with Monkey. During a separate Monkey run, disable the probe during Hold/Drag and verify cleanup without PASS-on-cancellation.
 
-## IA-2 — Availability contract
+## IA-2 — Availability contract and Project policy
 
-Place host-neutral evaluation values/contracts in `Module.InteractionAutomation.Availability`; keep request execution ownership in Runner. Evaluate the requested capability, and include only the interaction-point/route context required to keep selection and actual execution consistent. Do not make a generic object-payload bus or make Modules depend on Framework request types.
+### Implemented scope
 
-Selection filters candidates; execution revalidates before input. Shared policy semantics do not imply an immutable world between those queries. Project implementations read game-state permissions without copying product business rules into reusable code. Physical interaction permission is distinct from whether a purchase/action succeeds.
+`Module.InteractionAutomation.Availability` owns the host-neutral `InteractionAvailabilityContext`, structural evaluator, policy-denial result and immutable evaluator composition. No Module depends on Framework request types.
 
-Acceptance: the same target can permit Hover and reject Click; changing project/UI state affects the next query without a manually synchronized availability cache; execution rejects a stale selected action safely.
+The context carries one atomic capability, a captured target, its existing bounds-center point and, for drag, `DragSource` / `DragDestination` plus the counterpart snapshot. A drag destination need not advertise PointerDrag. `ForTarget`, `ForDragSource` and `ForDragDestination` prevent incomplete/default context use at standard entrypoints.
 
-## IA-3 — Unity reachability
+`CompositeInteractionAvailabilityEvaluator` queries each policy on every evaluation and accumulates structural reasons and stable Project reason codes. An allowing policy cannot undo another denial. Evaluator errors propagate. Product permission is not cached, synchronized from UI events, or inferred from whether a purchase/action would succeed.
 
-Add `Module.InteractionAutomation.Availability.Unity3D` to the existing Unity workspace. Use the configured production input route to evaluate the actual intended point and event recipient, not a visual-overlap guess. Account for child graphics/event handlers, Selectable state, CanvasGroup behavior, masks, transparent blockers and modal overlays. Observers remain facts; Oracles remain judgment; neither becomes the availability source of truth.
+Runner recaptures current targets and revalidates capability-specific permission before the first physical submission of each request. Monkey evaluates individual action candidates and drag pairs; it no longer removes the whole target just because one capability is denied. Rejected execution gets no coverage credit. The existing deterministic generator, candidate comparer, pointer sequence and cleanup order are retained.
+
+`UnityInteractionAutomationBuilder.AddAvailabilityPolicy` adds Project restrictions while retaining the base evaluator. `UseAvailability` explicitly replaces only the base. The final composed instance is shared by Runner, runtime queries and the Monkey factory. The builder's policy list freezes at Build; the external game state read by those policies can continue changing.
+
+`AutomationLabInteractionComposition.CreateRuntime/CreateRunner` now accept an optional Project evaluator. Existing callers preserve baseline behavior. `AutoLabInteractionAvailabilityPolicy` demonstrates a Project-owned permission state and target-specific rules. The opt-in `AutoLabAvailabilityProbe` exercises the real virtual mouse/EventSystem path and a stale selected Click. It is not added to the scene automatically and does not modify existing P12 behavior.
+
+### Current IA-2 revision set
+
+| Repository | Pinned revision |
+| --- | --- |
+| Workspace.InteractionAutomation | `0691798c7f990bc6a4d54f5a1b604ba6b0955a3d` |
+| Framework.InteractionAutomation.Runner | `637072c1135bcf9cb44044e6c9d8cdaaabfdda56` |
+| Framework.InteractionAutomation.Monkey | `21e1bddb5e4bc53ce531d89629aff9a24b96c116` |
+| Framework.InteractionAutomation.Runner.Unity3D | `d5c09a04760b76b4fb036524eeea58a47e7d8ac7` |
+| Workspace.InteractionAutomation.Unity3D (unchanged) | `1da731004fdff13fb1034e8d1410ff32aef0a6fb` |
+| Framework.InteractionAutomation.Monkey.Unity3D (unchanged) | `26ed9a0aed74f4cc8f7cdaa990c37e8b4f8b0031` |
+| Workspace.Verification (unchanged) | `c85081e463233f92b014b19faec92b8d66b1e3a8` |
+
+### Limits and acceptance
+
+This is operation-admission revalidation, not an authorization lease or continuous permission monitor. An already-admitted gesture retains its existing cleanup semantics. No automatic retry/reselection, no atomicity across asynchronous input submissions, and no new expected-denial QA verdict classification are introduced. The existing QA wrapper stops on execution errors; explicit negative tests assert the expected rejection.
+
+No hit-test/occlusion, automatic Selectable/CanvasGroup inspection, camera/view routing, scene readiness or transition handling is included. The point remains the existing bounds center. Occlusion remains deferred until the user resumes that work.
+
+New/expanded tests cover contexts and denial composition, all six Runner capabilities, live state changes, source recapture, destination permissions, and selected-action rejection with no input/coverage. The pre-existing golden seeded-sequence and gesture lifecycle tests remain regression gates.
+
+Authoring verification: remote source/diff review only. The authoring environment has neither Unity Editor nor .NET SDK and could not perform an initialized-checkout architecture scan, C# compilation, .NET tests, Unity tests or a runtime probe run. These results remain pending. See `IA2_ACCEPTANCE.md` for exact commands and the opt-in live probe procedure.
+
+## IA-3 — Unity reachability (deferred)
+
+Add `Module.InteractionAutomation.Availability.Unity3D` to the existing Unity workspace when this stage is resumed. Use the configured production input route to evaluate the actual intended point and event recipient, not a visual-overlap guess. Account for child graphics/event handlers, Selectable state, CanvasGroup behavior, masks, transparent blockers and modal overlays. Observers remain facts; Oracles remain judgment; neither becomes the availability source of truth.
 
 Acceptance: a modal blocks the target behind it and closing it restores eligibility without explicit refresh. A transparent raycast blocker is effective. Disabled Click need not disable Hover. Negative interaction tests remain possible through an explicitly chosen test policy; eligible-action Monkey is not proof that blocked product actions are correctly rejected.
 
