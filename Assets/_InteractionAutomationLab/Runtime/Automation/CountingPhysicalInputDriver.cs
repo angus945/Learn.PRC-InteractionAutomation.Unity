@@ -9,6 +9,7 @@ namespace Project.InteractionAutomationLab.Automation
     public sealed class CountingPhysicalInputDriver : IPhysicalInputDriver
     {
         private readonly IPhysicalInputDriver inner;
+        private TaskCompletionSource<bool> nextPointerDown;
 
         public CountingPhysicalInputDriver(IPhysicalInputDriver inner)
         {
@@ -19,6 +20,14 @@ namespace Project.InteractionAutomationLab.Automation
         public int PointerDownCount { get; private set; }
         public int PointerUpCount { get; private set; }
         public bool IsPointerPressed { get; private set; }
+
+        public Task ArmNextPointerDownSignal()
+        {
+            if (nextPointerDown != null && !nextPointerDown.Task.IsCompleted)
+                throw new InvalidOperationException("A pointer-down signal is already armed.");
+            nextPointerDown = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            return nextPointerDown.Task;
+        }
 
         public async ValueTask MovePointerAsync(InteractionPoint position, CancellationToken cancellationToken = default)
         {
@@ -32,6 +41,7 @@ namespace Project.InteractionAutomationLab.Automation
             SubmissionCount++;
             PointerDownCount++;
             IsPointerPressed = true;
+            nextPointerDown?.TrySetResult(true);
         }
 
         public async ValueTask PointerUpAsync(PointerButton button, CancellationToken cancellationToken = default)

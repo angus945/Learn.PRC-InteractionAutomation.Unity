@@ -3,6 +3,17 @@
   "rootNamespace": "Project.InteractionAutomationLab.Tests",
   "references": [
     "Project.InteractionAutomationLab",
+    "Framework.InteractionAutomation.Monkey",
+    "Framework.InteractionAutomation.Monkey.Unity3D",
+    "Framework.InteractionAutomation.Runner.Unity3D",
+    "Module.InteractionAutomation.Availability",
+    "Module.InteractionAutomation.Observation.Unity3D",
+    "Module.InteractionAutomation.PhysicalInput",
+    "Module.InteractionAutomation.PhysicalInput.Unity3D",
+    "Module.InteractionAutomation.Targets",
+    "Module.InteractionAutomation.Targets.Unity3D",
+    "Module.InteractionAutomation.Timing",
+    "Module.InteractionAutomation.Timing.Unity3D",
     "Unity.InputSystem",
     "Unity.ugui",
     "UnityEngine.TestRunner"

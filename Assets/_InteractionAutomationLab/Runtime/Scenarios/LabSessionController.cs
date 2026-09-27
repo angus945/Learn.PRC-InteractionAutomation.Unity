@@ -158,7 +158,7 @@ namespace Project.InteractionAutomationLab.Scenarios
             countingInput = new CountingPhysicalInputDriver(physicalInput);
             LabTargetBindingSource bindings = new LabTargetBindingSource(subjectRoot, LabBindingScope.ProductScope);
             LabAcceptanceSuite suite = new LabAcceptanceSuite(product, bindings, countingInput, inputProcessingBoundary, physicalInput.Mouse.deviceId);
-            UpdateDiagnostics("Running scripted acceptance S01-S08 and S10...");
+            UpdateDiagnostics("Running scripted acceptance S01-S10...");
             await inputProcessingBoundary.WaitAsync(cancellationToken);
             LastAcceptanceReport = await suite.RunAsync(cancellationToken);
             string status = LastAcceptanceReport.Passed ? "PASS" : "FAIL";

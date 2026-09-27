@@ -15,7 +15,7 @@ namespace Project.InteractionAutomationLab.Tests
         private const string ScenePath = "Assets/_InteractionAutomationLab/Scenes/InteractionAutomationStateLab.unity";
 
         [UnityTest]
-        public IEnumerator ScriptedAcceptance_ExercisesS01ThroughS08AndS10()
+        public IEnumerator ScriptedAcceptance_ExercisesS01ThroughS10()
         {
             AsyncOperation load = SceneManager.LoadSceneAsync(ScenePath, LoadSceneMode.Single);
             while (!load.isDone) yield return null;
@@ -27,7 +27,7 @@ namespace Project.InteractionAutomationLab.Tests
             if (task.IsFaulted) throw task.Exception;
             LabAcceptanceReport report = task.Result;
             Assert.That(report, Is.Not.Null);
-            Assert.That(report.scenarios.Count, Is.EqualTo(9));
+            Assert.That(report.scenarios.Count, Is.EqualTo(10));
             foreach (LabScenarioResult scenario in report.scenarios)
             {
                 Assert.That(scenario.status, Is.EqualTo(LabScenarioStatus.Passed), scenario.id + ": " + scenario.detail);

@@ -59,6 +59,7 @@ namespace Project.InteractionAutomationLab.Scenarios
             await RunScenarioAsync(report, "S06", RunS06Async, cancellationToken);
             await RunScenarioAsync(report, "S07", RunS07Async, cancellationToken);
             await RunScenarioAsync(report, "S08", RunS08Async, cancellationToken);
+            await RunScenarioAsync(report, "S09", RunS09Async, cancellationToken);
             await RunScenarioAsync(report, "S10", RunS10Async, cancellationToken);
             report.completedUtc = DateTime.UtcNow.ToString("O");
             return report;
@@ -274,6 +275,52 @@ namespace Project.InteractionAutomationLab.Scenarios
             Require(host.Verdict == TestVerdict.Passed, "Negative runtime click was not observed by host.");
             Require(product.State.Gold == beforeGold && product.State.PotionCount == beforePotion && product.State.LastOutcome == "GameplayInputLocked", "Product failed to reject structurally delivered Cutscene input.");
             return "Structural-only negative runtime delivered input and product defense rejected mutation.";
+        }
+
+        private async ValueTask<string> RunS09Async(CancellationToken cancellationToken)
+        {
+            RestoreBaseline();
+            int chargeBefore = product.State.ChargeCompletedCount;
+            await CancelAfterPointerDownAsync(new PointerHoldRequest(Id(LabTargetCatalog.Charge), TimeSpan.FromSeconds(2)), cancellationToken);
+            Require(!input.IsPointerPressed, "Cancelled Hold left the pointer pressed.");
+            Require(product.State.ChargeCompletedCount <= chargeBefore + 1, "Cancelled Hold mutated the product more than once.");
+            RestoreBaseline();
+            await CancelAfterPointerDownAsync(new PointerDragRequest(Id(LabTargetCatalog.Sword), Id(LabTargetCatalog.Weapon)), cancellationToken);
+            Require(!input.IsPointerPressed, "Cancelled Drag left the pointer pressed.");
+            await ExecuteClickAsync(runtime, LabTargetCatalog.Sword, cancellationToken);
+            Require(product.State.SelectedItemId == "sword", "A new run did not work after cancellation cleanup.");
+            return "Hold/Drag cancellation was triggered by submitted Down, released the pointer and allowed a subsequent run.";
+        }
+
+        private async ValueTask CancelAfterPointerDownAsync<TRequest>(TRequest request, CancellationToken cancellationToken)
+        {
+            int upBefore = input.PointerUpCount;
+            Task downSignal = input.ArmNextPointerDownSignal();
+            CancellationTokenSource gestureCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            Task gestureTask = runtime.Runner.ExecuteAsync(request, gestureCancellation.Token).AsTask();
+            Task timeout = Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            Task completed = await Task.WhenAny(downSignal, timeout);
+            if (completed != downSignal)
+            {
+                gestureCancellation.Cancel();
+                gestureCancellation.Dispose();
+                throw new TimeoutException("Timed out waiting for pointer Down submission.");
+            }
+            gestureCancellation.Cancel();
+            try
+            {
+                await gestureTask;
+                throw new InvalidOperationException("Gesture completed instead of reporting cancellation.");
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            finally
+            {
+                gestureCancellation.Dispose();
+            }
+            await boundary.WaitAsync(CancellationToken.None);
+            Require(input.PointerUpCount == upBefore + 1, "Cancellation cleanup did not submit exactly one pointer release.");
         }
 
         private async ValueTask AssertLockRowAsync(bool rootInteractable, bool bypassIgnoresParent, bool bypassInteractable,

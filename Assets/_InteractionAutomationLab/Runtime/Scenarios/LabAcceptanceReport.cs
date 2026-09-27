@@ -32,7 +32,7 @@ namespace Project.InteractionAutomationLab.Scenarios
         {
             get
             {
-                if (scenarios.Count != 9) return false;
+                if (scenarios.Count != 10) return false;
                 foreach (LabScenarioResult scenario in scenarios)
                 {
                     if (scenario.status != LabScenarioStatus.Passed) return false;

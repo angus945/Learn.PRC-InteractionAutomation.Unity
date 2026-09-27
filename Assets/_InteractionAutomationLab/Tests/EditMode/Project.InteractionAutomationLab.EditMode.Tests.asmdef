@@ -4,7 +4,8 @@
   "references": [
     "Project.InteractionAutomationLab",
     "Module.InteractionAutomation.Availability",
-    "Module.InteractionAutomation.Targets"
+    "Module.InteractionAutomation.Targets",
+    "Module.Verification.Oracle"
   ],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],

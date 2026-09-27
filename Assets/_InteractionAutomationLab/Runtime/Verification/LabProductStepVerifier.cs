@@ -27,11 +27,9 @@ namespace Project.InteractionAutomationLab.Verification
             }
             else if (step.TargetId.Value == LabTargetCatalog.BuyPotion)
             {
-                bool success = before.gold >= 10;
-                valid = valid && after.buyAttemptCount == before.buyAttemptCount + 1;
-                valid = valid && (success ? after.gold == before.gold - 10 && after.potionCount == before.potionCount + 1 :
-                    after.gold == before.gold && after.potionCount == before.potionCount);
-                detail = success ? "Purchase changed Gold/Potion exactly once." : "Insufficient currency was rejected without mutation.";
+                OracleResult purchase = LabProductInvariantOracle.EvaluatePurchase(before, after);
+                valid = valid && purchase.Verdict == TestVerdict.Passed;
+                detail = purchase.Detail;
             }
             else if (step.TargetId.Value == LabTargetCatalog.UsePotion)
             {
