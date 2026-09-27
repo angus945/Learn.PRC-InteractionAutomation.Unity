@@ -182,7 +182,7 @@ Unavailable targets are rejected before any physical input is submitted.
 
 # Phase 10 — New Action Shapes
 
-Status: **NEXT**
+Status: **IMPLEMENTED — Unity runtime validation required**
 
 Add only actions that introduce a genuinely different interaction shape.
 
@@ -206,9 +206,33 @@ one or more Move operations while held
 PointerUp
 ```
 
-Drag should be introduced as a concrete interaction use case, not as more orchestration inside `InteractionRunner`.
+Drag is implemented as `PointerDragInteraction` behind the thin `InteractionRunner` facade.
 
-Do not create a generic action bus, handler registry, or action DSL before multiple implemented actions demonstrate a stable abstraction.
+Current core invariants:
+
+```text
+one captured target set
+↓
+resolve source + destination
+↓
+source requires PointerDrag
+↓
+source + destination availability
+↓
+Move(source center)
+↓
+Left Down
+↓
+Move(destination center) while held
+↓
+Left Up
+```
+
+After PointerDown succeeds, cancellation or failure during the held portion still attempts a non-cancellable PointerUp cleanup.
+
+The AutoLab runtime probe uses `button.confirm` as the source and `toggle.music` as the destination. The Button keeps its ButtonTargetKind and gains PointerDrag capability; Kind does not dispatch the action.
+
+Do not create a generic action bus, handler registry, Drop capability, or drag/drop relationship model before another real case requires one.
 
 Do not create a separate learning milestone for every input enum value.
 
@@ -253,7 +277,7 @@ This is where `OSSpace`, serialization, and stable cross-process kind identity m
 
 ```text
 Workspace.InteractionAutomation
-0e7209dadbd34839f964c53e2373f7637bd501a5
+0442d5859493678630d64d2d08143862c027758a
 
 Workspace.InteractionAutomation.Unity3D
 1396d829c6a1f741a3cca7cf3b22f1468aade382
@@ -264,5 +288,6 @@ Workspace.InteractionAutomation.Unity3D
 ```text
 Phases 1–9  COMPLETE
 P10 boundary refactor COMPLETE
-Phase 10 Drag START HERE
+Phase 10 Drag IMPLEMENTED
+Unity runtime acceptance PENDING
 ```

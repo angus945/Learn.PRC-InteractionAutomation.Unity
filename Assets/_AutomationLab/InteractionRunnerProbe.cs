@@ -18,6 +18,12 @@ public sealed class InteractionRunnerProbe :
     [SerializeField]
     private ToggleStateProbe toggleStateProbe;
 
+    [SerializeField]
+    private DragSourceProbe dragSourceProbe;
+
+    [SerializeField]
+    private DropZoneProbe dropZoneProbe;
+
     private UnityPhysicalInputDriver physicalInput;
     private InteractionRunner runner;
 
@@ -35,6 +41,22 @@ public sealed class InteractionRunnerProbe :
         {
             Debug.LogError(
                 "ToggleStateProbe is not assigned.");
+
+            yield break;
+        }
+
+        if (dragSourceProbe == null)
+        {
+            Debug.LogError(
+                "DragSourceProbe is not assigned.");
+
+            yield break;
+        }
+
+        if (dropZoneProbe == null)
+        {
+            Debug.LogError(
+                "DropZoneProbe is not assigned.");
 
             yield break;
         }
@@ -141,8 +163,58 @@ public sealed class InteractionRunnerProbe :
         Debug.Log(
             "PHASE 9 RUNNER INTEGRATION PASS\n" +
             "button.confirm -> available PointerClick PASS\n" +
-            "toggle.music -> available PointerClick PASS\n" +
-            "Both targets used the same availability-aware InteractionRunner.");
+            "toggle.music -> available PointerClick PASS");
+
+        dragSourceProbe.ResetObservation();
+        dropZoneProbe.ResetObservation();
+
+        Debug.Log(
+            "RUNNER DRAG START");
+
+        Task drag =
+            runner
+                .PointerDragAsync(
+                    new InteractionTargetId(
+                        "button.confirm"),
+                    new InteractionTargetId(
+                        "toggle.music"))
+                .AsTask();
+
+        while (!drag.IsCompleted)
+            yield return null;
+
+        if (drag.IsFaulted)
+        {
+            Debug.LogException(
+                drag.Exception?
+                    .GetBaseException());
+
+            yield break;
+        }
+
+        // Runner completion still means submission only.
+        // Observation belongs after host/UI processing.
+        yield return null;
+
+        if (dragSourceProbe.BeginDragCount != 1 ||
+            dragSourceProbe.DragCount < 1 ||
+            dragSourceProbe.EndDragCount != 1 ||
+            dropZoneProbe.DropCount != 1)
+        {
+            Debug.LogError(
+                "PHASE 10 DRAG FAILED\n" +
+                $"BeginDrag={dragSourceProbe.BeginDragCount}\n" +
+                $"Drag={dragSourceProbe.DragCount}\n" +
+                $"EndDrag={dragSourceProbe.EndDragCount}\n" +
+                $"Drop={dropZoneProbe.DropCount}");
+
+            yield break;
+        }
+
+        Debug.Log(
+            "PHASE 10 DRAG PASS\n" +
+            "button.confirm -> PointerDrag -> toggle.music\n" +
+            "Normal Unity Input System / EventSystem route observed.");
     }
 
     private void OnDestroy()

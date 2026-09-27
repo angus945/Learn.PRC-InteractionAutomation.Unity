@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 11310478}
   - component: {fileID: 11310482}
   - component: {fileID: 11310483}
+  - component: {fileID: 1900000101}
   m_Layer: 5
   m_Name: ConfirmButton
   m_TagString: Untagged
@@ -174,7 +175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: button.confirm
-  capabilities: 1
+  capabilities: 5
 --- !u!114 &11310479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,6 +306,7 @@ GameObject:
   - component: {fileID: 36762816}
   - component: {fileID: 36762817}
   - component: {fileID: 36762818}
+  - component: {fileID: 1900000102}
   m_Layer: 5
   m_Name: Toggle
   m_TagString: Untagged
@@ -998,6 +1000,8 @@ MonoBehaviour:
   interactionCamera: {fileID: 1134976234}
   buttonClickCounter: {fileID: 11310483}
   toggleStateProbe: {fileID: 36762818}
+  dragSourceProbe: {fileID: 1900000101}
+  dropZoneProbe: {fileID: 1900000102}
 --- !u!1 &1344203428
 GameObject:
   m_ObjectHideFlags: 0
@@ -1432,6 +1436,31 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+
+--- !u!114 &1900000101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11310476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bf09c83598b43f2827fbde93c16f901, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::DragSourceProbe
+--- !u!114 &1900000102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36762814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd108805c70c4d37aa5cf64a692e4012, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::DropZoneProbe
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
