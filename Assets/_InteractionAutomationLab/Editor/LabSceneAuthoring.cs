@@ -7,11 +7,13 @@ using Module.InteractionAutomation.Targets.Unity3D;
 using Module.InteractionAutomation.Timing.Unity3D;
 using Project.InteractionAutomationLab.Automation;
 using Project.InteractionAutomationLab.Presentation;
+using Project.InteractionAutomationLab.Scenarios;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -45,7 +47,8 @@ namespace Project.InteractionAutomationLab.Editor
             GameObject sceneRoot = new GameObject("InteractionAutomationStateLab");
             CreateEventSystem(sceneRoot.transform);
             GameObject labHost = CreateObject("LabHost", sceneRoot.transform);
-            labHost.AddComponent<UnityFrameInputProcessingBoundary>();
+            UnityFrameInputProcessingBoundary boundary = labHost.AddComponent<UnityFrameInputProcessingBoundary>();
+            LabSessionController session = labHost.AddComponent<LabSessionController>();
 
             GameObject canvasObject = CreateObject("Canvas", sceneRoot.transform);
             Canvas canvas = canvasObject.AddComponent<Canvas>();
@@ -139,14 +142,21 @@ namespace Project.InteractionAutomationLab.Editor
 
             GameObject labControlPanel = CreateLabeledPanel("LabControlPanel", canvasObject.transform, "LAB CONTROL", new Vector2(0.75f, 0.02f), new Vector2(0.99f, 0.98f));
             Text diagnostics = CreateText("Diagnostics", labControlPanel.transform,
-                "Manual Explore\n\nAutomation controls are enabled in CSL-2/3.\n\nNo target in this panel.\n\nScope exclusions:\n- Occlusion\n- Camera Stack\n- Scene transitions", 18, TextAnchor.UpperLeft);
-            Anchor(diagnostics.rectTransform, new Vector2(0.06f, 0.08f), new Vector2(0.94f, 0.88f), Vector2.zero, Vector2.zero);
+                "Manual Explore\nReady.\n\nNo target in this panel.\n\nScope exclusions:\n- Occlusion\n- Camera Stack\n- Scene transitions", 18, TextAnchor.UpperLeft);
+            Anchor(diagnostics.rectTransform, new Vector2(0.06f, 0.08f), new Vector2(0.94f, 0.70f), Vector2.zero, Vector2.zero);
+            Button runAcceptance = CreateControlButton(labControlPanel.transform, "Run Scripted Acceptance");
+            Anchor(runAcceptance.GetComponent<RectTransform>(), new Vector2(0.06f, 0.84f), new Vector2(0.94f, 0.91f), Vector2.zero, Vector2.zero);
+            Button stop = CreateControlButton(labControlPanel.transform, "Stop");
+            Anchor(stop.GetComponent<RectTransform>(), new Vector2(0.06f, 0.75f), new Vector2(0.47f, 0.82f), Vector2.zero, Vector2.zero);
+            Button reset = CreateControlButton(labControlPanel.transform, "Reset");
+            Anchor(reset.GetComponent<RectTransform>(), new Vector2(0.53f, 0.75f), new Vector2(0.94f, 0.82f), Vector2.zero, Vector2.zero);
             GameObject pointerPresentation = CreatePanel("PointerPresentation", canvasObject.transform, Color.clear);
             Image pointerImage = pointerPresentation.GetComponent<Image>();
             pointerImage.raycastTarget = false;
             pointerPresentation.SetActive(false);
 
             WireController(controller, inventoryPage, settingsPage, gameplayLockGroup, quickBypass, header, details, diagnostics, music, sfx, canvasObject.GetComponent<RectTransform>());
+            WireSession(session, controller, subjectRoot.transform, boundary, diagnostics);
             UnityEventTools.AddPersistentListener(inventoryNavigation.onClick, controller.ShowInventory);
             UnityEventTools.AddPersistentListener(settingsNavigation.onClick, controller.ShowSettings);
             UnityEventTools.AddPersistentListener(sortButton.onClick, controller.ToggleSort);
@@ -156,10 +166,14 @@ namespace Project.InteractionAutomationLab.Editor
             UnityEventTools.AddPersistentListener(emergency.onClick, controller.EmergencyAction);
             UnityEventTools.AddPersistentListener(music.onValueChanged, controller.MusicChanged);
             UnityEventTools.AddPersistentListener(sfx.onValueChanged, controller.SfxChanged);
+            UnityEventTools.AddPersistentListener(runAcceptance.onClick, session.RunScriptedAcceptance);
+            UnityEventTools.AddPersistentListener(stop.onClick, session.Stop);
+            UnityEventTools.AddPersistentListener(reset.onClick, session.ResetLab);
 
             settingsPage.SetActive(false);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
+            AddSceneToBuildSettings();
             AssetDatabase.SaveAssets();
             LabSceneValidator.ValidateSceneAsset();
             Debug.Log("CSL-1 scene authored successfully: " + ScenePath);
@@ -170,7 +184,38 @@ namespace Project.InteractionAutomationLab.Editor
             GameObject eventSystemObject = CreateObject("EventSystem", parent);
             eventSystemObject.AddComponent<EventSystem>();
             InputSystemUIInputModule inputModule = eventSystemObject.AddComponent<InputSystemUIInputModule>();
-            inputModule.AssignDefaultActions();
+            AssignPersistentUiActions(inputModule);
+            inputModule.pointerBehavior = UIPointerBehavior.AllPointersAsIs;
+        }
+
+        private static void AssignPersistentUiActions(InputSystemUIInputModule module)
+        {
+            const string inputActionsPath = "Packages/com.unity.inputsystem/InputSystem/Plugins/PlayerInput/DefaultInputActions.inputactions";
+            InputActionAsset asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(inputActionsPath);
+            if (asset == null) throw new InvalidOperationException("Unity default UI input actions were not found.");
+            module.UnassignActions();
+            module.actionsAsset = asset;
+            module.point = FindActionReference(inputActionsPath, "Point");
+            module.move = FindActionReference(inputActionsPath, "Navigate");
+            module.submit = FindActionReference(inputActionsPath, "Submit");
+            module.cancel = FindActionReference(inputActionsPath, "Cancel");
+            module.leftClick = FindActionReference(inputActionsPath, "Click");
+            module.rightClick = FindActionReference(inputActionsPath, "RightClick");
+            module.middleClick = FindActionReference(inputActionsPath, "MiddleClick");
+            module.scrollWheel = FindActionReference(inputActionsPath, "ScrollWheel");
+            module.trackedDevicePosition = FindActionReference(inputActionsPath, "TrackedDevicePosition");
+            module.trackedDeviceOrientation = FindActionReference(inputActionsPath, "TrackedDeviceOrientation");
+        }
+
+        private static InputActionReference FindActionReference(string assetPath, string actionName)
+        {
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            foreach (UnityEngine.Object asset in assets)
+            {
+                InputActionReference reference = asset as InputActionReference;
+                if (reference != null && reference.action != null && reference.action.name == actionName) return reference;
+            }
+            throw new InvalidOperationException("Input action reference was not found: " + actionName);
         }
 
         private static string CreateItemPrefab()
@@ -250,6 +295,15 @@ namespace Project.InteractionAutomationLab.Editor
             button.targetGraphic = root.GetComponent<Image>();
             CreateCenteredLabel(root.transform, label);
             ConfigureTarget(root, targetId);
+            return button;
+        }
+
+        private static Button CreateControlButton(Transform parent, string label)
+        {
+            GameObject root = CreatePanel(label.Replace(" ", string.Empty), parent, Control);
+            Button button = root.AddComponent<Button>();
+            button.targetGraphic = root.GetComponent<Image>();
+            CreateCenteredLabel(root.transform, label);
             return button;
         }
 
@@ -389,6 +443,17 @@ namespace Project.InteractionAutomationLab.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        private static void WireSession(LabSessionController session, LabProductController controller, Transform subjectRoot,
+            UnityFrameInputProcessingBoundary boundary, Text diagnostics)
+        {
+            SerializedObject serialized = new SerializedObject(session);
+            serialized.FindProperty("product").objectReferenceValue = controller;
+            serialized.FindProperty("subjectRoot").objectReferenceValue = subjectRoot;
+            serialized.FindProperty("inputProcessingBoundary").objectReferenceValue = boundary;
+            serialized.FindProperty("diagnosticsText").objectReferenceValue = diagnostics;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         private static void PlaceRow(RectTransform rect, int row, int rowCount)
         {
             float height = 0.74f / rowCount;
@@ -426,6 +491,17 @@ namespace Project.InteractionAutomationLab.Editor
             string name = Path.GetFileName(path);
             EnsureFolder(parent);
             AssetDatabase.CreateFolder(parent, name);
+        }
+
+        private static void AddSceneToBuildSettings()
+        {
+            List<EditorBuildSettingsScene> scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            foreach (EditorBuildSettingsScene scene in scenes)
+            {
+                if (scene.path == ScenePath) return;
+            }
+            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
         }
     }
 }

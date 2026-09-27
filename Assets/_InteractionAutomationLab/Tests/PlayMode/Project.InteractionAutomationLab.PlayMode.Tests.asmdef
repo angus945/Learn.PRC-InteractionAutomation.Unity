@@ -1,0 +1,20 @@
+{
+  "name": "Project.InteractionAutomationLab.PlayMode.Tests",
+  "rootNamespace": "Project.InteractionAutomationLab.Tests",
+  "references": [
+    "Project.InteractionAutomationLab",
+    "Unity.InputSystem",
+    "Unity.ugui",
+    "UnityEngine.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": []
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Project.InteractionAutomationLab.EditMode.Tests",
+  "rootNamespace": "Project.InteractionAutomationLab.Tests",
+  "references": [
+    "Project.InteractionAutomationLab",
+    "Module.InteractionAutomation.Availability",
+    "Module.InteractionAutomation.Targets"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": ["TestAssemblies"]
+}

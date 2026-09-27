@@ -4,6 +4,9 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_InteractionAutomationLab/Scenes/InteractionAutomationStateLab.unity
+    guid: 7e30310cee000e44eacf319c505e77e4
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
