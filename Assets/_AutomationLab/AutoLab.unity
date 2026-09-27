@@ -135,6 +135,8 @@ GameObject:
   - component: {fileID: 11310482}
   - component: {fileID: 11310483}
   - component: {fileID: 1900000101}
+  - component: {fileID: 1900000104}
+  - component: {fileID: 1900000105}
   m_Layer: 5
   m_Name: ConfirmButton
   m_TagString: Untagged
@@ -175,7 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: button.confirm
-  capabilities: 5
+  capabilities: 199
 --- !u!114 &11310479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,6 +309,7 @@ GameObject:
   - component: {fileID: 36762817}
   - component: {fileID: 36762818}
   - component: {fileID: 1900000102}
+  - component: {fileID: 1900000106}
   m_Layer: 5
   m_Name: Toggle
   m_TagString: Untagged
@@ -408,7 +411,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: toggle.music
-  capabilities: 1
+  capabilities: 9
 --- !u!114 &36762818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1003,6 +1006,10 @@ MonoBehaviour:
   toggleStateProbe: {fileID: 36762818}
   dragSourceProbe: {fileID: 1900000101}
   dropZoneProbe: {fileID: 1900000102}
+  pointerHoverProbe: {fileID: 11310482}
+  pointerClickCountProbe: {fileID: 1900000104}
+  pointerHoldProbe: {fileID: 1900000105}
+  pointerScrollProbe: {fileID: 1900000106}
   inputProcessingBoundary: {fileID: 1900000103}
 --- !u!1 &1344203428
 GameObject:
@@ -1475,6 +1482,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8d75e1938f842d49fd31f80d749cc01, type: 3}
   m_Name:
   m_EditorClassIdentifier: Module.InteractionAutomation.Runner.Unity3D::Module.InteractionAutomation.Runner.Unity3D.UnityFrameInputProcessingBoundary
+--- !u!114 &1900000104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11310476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31c09d6e412c49f1a66552030c1ad401, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PointerClickCountProbe
+--- !u!114 &1900000105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11310476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 462f01df26c44cb099809099e8ca2502, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PointerHoldProbe
+--- !u!114 &1900000106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36762814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7216c8c75457496eb20d0a4a5c63bf03, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PointerScrollProbe
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

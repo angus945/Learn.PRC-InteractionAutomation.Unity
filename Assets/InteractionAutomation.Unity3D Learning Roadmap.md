@@ -2,302 +2,158 @@
 
 ## Goal
 
-Learn the architecture of physical interaction automation in Unity without turning implementation details into separate learning milestones.
+Learn host-neutral physical interaction automation through normal Unity input routes without turning every implementation detail into a separate milestone.
 
-Current model:
+## Phases 1–9
+
+Status: **COMPLETE**
+
+Established boundaries:
 
 ```text
-Interaction Target
-        ↓
-InteractionTargetSnapshot
-        ├─ Id
-        ├─ Kind
-        ├─ Bounds
-        ├─ Capabilities
-        ├─ IsVisible
-        └─ IsEnabled
-        ↓
-Availability Evaluation
-        ↓
-InteractionRunner
-        ↓ delegates
-Concrete Interaction Use Case
-        ↓
-IPhysicalInputDriver
-        ↓
-Unity normal input / product route
+Target discovery
+→ capability
+→ availability
+→ concrete interaction use case
+→ physical input
+→ host input processing
+→ product behavior
 ```
 
-Automation decides where and how to submit input. It does not directly invoke product behavior.
+Key contracts remain:
 
----
+- Kind describes what a target is.
+- Capability describes how automation may interact with it.
+- Availability describes whether it is currently operable.
+- Physical-input completion means submission, not product completion.
+- Host processing boundaries are explicit only where interaction shape requires them.
 
-## Phase 1 — Interaction Target Model
+# Phase 10 — Pointer Execution
 
-Status: **Complete**
+Keyboard and TextInput are intentionally deferred. Phase 10 now scopes only mouse/pointer execution.
 
-Explicit target exposure through `InteractionTargetBinding`; discovery produces host-neutral snapshots.
-
-## Phase 2 — Canonical Coordinate Boundary
-
-Status: **Complete**
-
-```text
-ApplicationSpace
-OSSpace
-```
-
-Unity local automation uses `ApplicationSpace`. Host-specific coordinate conversion stays inside adapters.
-
-## Phase 3 — Physical Input Adapter
-
-Status: **Complete**
+Implemented pointer surface:
 
 ```text
-IPhysicalInputDriver
-↓
-UnityPhysicalInputDriver
-↓
-Unity Input System virtual mouse
-```
-
-Completion means input submission, not host/UI/gameplay completion. Ordinary sequential submissions compose without caller-inserted processing barriers. Sustained gestures may require an explicit host-processing boundary between gesture phases.
-
-## Phase 4 — Application Input Route
-
-Status: **Complete**
-
-```text
-Virtual Mouse
-↓
-Unity Input System
-↓
-InputSystemUIInputModule
-↓
-EventSystem
-↓
-normal product behavior
-```
-
-## Phase 5 — Capability Generalization
-
-Status: **Complete**
-
-Button and Toggle both use the same `PointerClick` physical interaction route. Product type does not choose the input implementation.
-
-## Phase 6 — Geometry Strategy
-
-Status: **Complete**
-
-```text
-IUnityInteractionTargetGeometryProvider
-        ├─ RectTransform → ApplicationSpace Rect
-        └─ Renderer      → ApplicationSpace Rect
-```
-
-Target bounds represent interaction geometry rather than a specific Unity geometry technology.
-
-## Phase 7 — Same Interaction, Different Product Domain
-
-Status: **Complete**
-
-The closed `InteractionTargetRole` enum was removed.
-
-Target taxonomy is open and process-local:
-
-```text
-IInteractionTargetKind
-        ↑
-        ├─ ButtonTargetKind
-        ├─ ToggleTargetKind
-        └─ ChestTargetKind
-```
-
-`Kind` describes what the target is. `Capabilities` describe how automation may interact with it.
-
-The registry currently uses CLR `Type` identity only. Stable serialized/cross-process kind IDs are deferred.
-
-## Phase 8 — Interaction Runner
-
-Status: **Complete**
-
-Reusable host-neutral workflow was introduced.
-
-The Phase 10 preparation refactor clarified the boundary:
-
-```text
-InteractionRunner
-= thin facade
-
-PointerClickInteraction
-= concrete PointerClick use case
-
-InteractionTargetResolver
-= shared uniqueness resolution over one captured target set
-```
-
-Action-specific sequencing must not accumulate inside `InteractionRunner`.
-
-## Phase 9 — Target Availability
-
-Status: **Complete**
-
-Discovery facts and operability are separate concerns:
-
-```text
-InteractionTargetSnapshot
-        ↓
-IInteractionAvailabilityEvaluator
-        ↓
-InteractionAvailability
-        ↓
-Concrete Interaction Use Case
-```
-
-Current reasons:
-
-```text
-NotVisible
-Disabled
-InvalidGeometry
-```
-
-Availability uses flags so multiple causes can be reported at once.
-
-Current scope deliberately does not yet model:
-
-```text
-occlusion
-modal blocking
-offscreen clipping
-gameplay eligibility
-Button.interactable / product-specific rules
-```
-
-Those are future evaluator concerns if evidence requires them.
-
-Unavailable targets are rejected before any physical input is submitted.
-
----
-
-# Phase 10 — New Action Shapes
-
-Status: **DRAG ACCEPTED — continue Keyboard / TextInput**
-
-Add only actions that introduce a genuinely different interaction shape.
-
-Recommended order:
-
-```text
-Drag
-Keyboard / TextInput
+PointerClick
+PointerDoubleClick
+PointerDrag
 Scroll
+PointerHold
+PointerHover
 ```
 
-First target: **Drag**, because it introduces a sustained interaction sequence:
+## Click
 
 ```text
-Move to source
-↓
-PointerDown
-↓
-one or more Move operations while held
-↓
-PointerUp
+Move(target center)
+→ Down
+→ Up
 ```
 
-Drag is implemented as `PointerDragInteraction` behind the thin `InteractionRunner` facade.
-
-Current core invariants:
+## DoubleClick
 
 ```text
-one captured target set
-↓
-resolve source + destination
-↓
-source requires PointerDrag
-↓
-source + destination availability
-↓
+Move(target center)
+→ click
+→ host processing boundary
+→ click
+```
+
+The boundary allows the host to observe the first click before the second. No generic double-click timeout policy is introduced yet.
+
+## Drag
+
+```text
 Move(source center)
-↓
-Left Down
-↓
-host input processing boundary
-↓
-Move(destination center) while held
-↓
-host input processing boundary
-↓
-Left Up
+→ Down
+→ host processing boundary
+→ Move(destination center) while held
+→ host processing boundary
+→ Up
 ```
 
-After PointerDown succeeds, cancellation or failure during the held portion still attempts a non-cancellable PointerUp cleanup.
+The first no-boundary Unity attempt produced `BeginDrag=0`. Adding `IHostInputProcessingBoundary` fixed the lifecycle, and the rerun passed.
 
-The first Unity runtime attempt queued Down → Move-held → Up before EventSystem had an intermediate processing opportunity. Evidence: `BeginDrag=0` and the destination Toggle received a normal click instead. Phase 10 therefore introduced `IHostInputProcessingBoundary`; Unity supplies `UnityFrameInputProcessingBoundary` from `Module.InteractionAutomation.Runner.Unity3D`.
-
-This does not change `IPhysicalInputDriver` completion semantics. The boundary only provides a host processing opportunity between sustained gesture phases.
-
-The rerun after introducing `IHostInputProcessingBoundary` passed in Unity. Drag runtime acceptance is therefore complete.
-
-The AutoLab runtime probe uses `button.confirm` as the source and `toggle.music` as the destination. The Button keeps its ButtonTargetKind and gains PointerDrag capability; Kind does not dispatch the action.
-
-Do not create a generic action bus, handler registry, Drop capability, or drag/drop relationship model before another real case requires one.
-
-Do not create a separate learning milestone for every input enum value.
-
-## Phase 11 — Observation / Verification
-
-Status: Pending
-
-Separate execution from correctness:
+## Scroll
 
 ```text
-Runner / Interaction Use Case → Action
-Observer / Verification       → Result
+Move(target center)
+→ Scroll(delta)
 ```
 
-## Phase 12 — Monkey / Exploration
+Unity `ScrollAsync` submits a transient wheel delta and clears that delta from the driver's durable submitted-state baseline so later mouse events do not replay it.
 
-Status: Pending
-
-Monkey is a selection policy over existing target, capability, availability, and interaction-use-case primitives.
-
-## Phase 13 — Remote / OS Automation
-
-Status: Pending
-
-Only after the local interaction model is stable:
+## Hold
 
 ```text
-External process
-↓
-transport
-↓
-application interaction API
-↓
-Target / Physical Input
+Move(target center)
+→ Down
+→ host processing boundary
+→ Delay(duration)
+→ host processing boundary
+→ Up
 ```
 
-This is where `OSSpace`, serialization, and stable cross-process kind identity may become real requirements.
+Once Down succeeds, cancellation/failure still attempts a non-cancellable Up cleanup.
 
----
+## Hover
 
-## Current Revisions
+```text
+Move(target center)
+```
+
+Hover intentionally reuses pointer movement rather than adding another physical-input primitive.
+
+## Current AutoLab capabilities
+
+```text
+button.confirm
+Kind = ButtonTargetKind
+Capabilities =
+    PointerClick
+  | PointerDoubleClick
+  | PointerDrag
+  | PointerHold
+  | PointerHover
+
+toggle.music
+Kind = ToggleTargetKind
+Capabilities =
+    PointerClick
+  | Scroll
+```
+
+This deliberately proves that target Kind does not dispatch interaction behavior.
+
+## Acceptance
+
+Drag runtime acceptance: **PASS**
+
+Full pointer execution runtime acceptance: **PENDING**
+
+Expected final probe result:
+
+```text
+PHASE 10 POINTER EXECUTION PASS
+Click / DoubleClick / Drag / Scroll / Hold / Hover
+Normal Unity Input System / EventSystem route observed.
+```
+
+## Current revisions
 
 ```text
 Workspace.InteractionAutomation
-010789b2d0bcd0ba5d652916db6271de64c7154f
+7f38feb3db280312327b14c572724019e28f5d8d
 
 Workspace.InteractionAutomation.Unity3D
-b9d0f99ef079180c376dccd9d89be003bf8c8267
+bfce40cd0ac7b99020eecf6320d6f91493470f3e
 ```
 
-## Current Learning Position
+## Next after acceptance
 
 ```text
-Phases 1–9  COMPLETE
-P10 boundary refactor COMPLETE
-Phase 10 Drag ACCEPTED
-Phase 10 Keyboard / TextInput START HERE
+Phase 11 — Observation / Verification
 ```
+
+Execution should remain separate from product-specific correctness assertions.
