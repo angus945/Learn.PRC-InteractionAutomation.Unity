@@ -27,6 +27,7 @@ public static class AutomationLabInteractionComposition
             .Create()
             .UseTargetSource(CreateTargetSource(interactionCamera))
             .UseAvailability(new SnapshotInteractionAvailabilityEvaluator())
+            .UseUnityUiStateAvailability()
             .UsePhysicalInput(physicalInput)
             .UseInputProcessingBoundary(inputProcessing);
         if (projectAvailability != null)

@@ -19,6 +19,8 @@
   <Project Path="Module.InteractionAutomation.Targets.Unity3D.csproj" />
   <Project Path="Module.Communication.JsonRpc.WebSocket.csproj" />
   <Project Path="Module.InteractionAutomation.Availability.csproj" />
+  <Project Path="Module.InteractionAutomation.Availability.Unity3D.csproj" />
+  <Project Path="Module.InteractionAutomation.Availability.Unity3D.Tests.csproj" />
   <Project Path="Framework.InteractionAutomation.Monkey.csproj" />
   <Project Path="Module.Verification.SystemFact.csproj" />
   <Project Path="Module.InteractionAutomation.Coordinates.csproj" />
