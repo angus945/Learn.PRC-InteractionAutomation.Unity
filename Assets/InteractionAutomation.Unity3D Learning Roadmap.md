@@ -169,7 +169,7 @@ Workspace.InteractionAutomation
 904baba3a489b5a28051ff27640a0c5d0fde3898
 
 Workspace.InteractionAutomation.Unity3D
-a836d44be53ed582c183b5ca9e5fc75382f8dbce
+d0291247cd4a32eacab9c18fa5444eca14f94656
 ```
 
 # Phase 11 — Observation / Verification
@@ -187,7 +187,7 @@ Unity integration revision:
 
 ```text
 Workspace.InteractionAutomation.Unity3D
-a836d44be53ed582c183b5ca9e5fc75382f8dbce
+d0291247cd4a32eacab9c18fa5444eca14f94656
 ```
 
 ## Boundaries
@@ -303,7 +303,7 @@ Unity integration revision:
 
 ```text
 Workspace.InteractionAutomation.Unity3D
-a836d44be53ed582c183b5ca9e5fc75382f8dbce
+d0291247cd4a32eacab9c18fa5444eca14f94656
 ```
 
 ## P12.1 — deterministic selection / execution
