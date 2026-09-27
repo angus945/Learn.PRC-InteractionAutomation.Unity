@@ -900,6 +900,7 @@ GameObject:
   - component: {fileID: 1163598004}
   - component: {fileID: 1900000103}
   - component: {fileID: 1900000107}
+  - component: {fileID: 1900000108}
   m_Layer: 0
   m_Name: Probe
   m_TagString: Untagged
@@ -1478,11 +1479,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoLabSeededPointerMonkeyProbe
   interactionCamera: {fileID: 1134976234}
   inputProcessingBoundary: {fileID: 1900000103}
+  presentation: {fileID: 1900000108}
   seed: 12345
   iterationCount: 25
   holdDurationMilliseconds: 200
   scrollHorizontal: 0
   scrollVertical: -1
+  selectionPreviewSeconds: 0.2
+  completedStepPauseSeconds: 0.15
+--- !u!114 &1900000108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1163597996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75b8873a7a2142a4a719f3679db62203, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::AutoLabMonkeyPresentation
+  showHud: 1
+  showCursor: 1
+  showTrail: 1
+  historyCapacity: 8
+  trailCapacity: 24
+  trailSampleDistance: 4
+  cursorSize: 18
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

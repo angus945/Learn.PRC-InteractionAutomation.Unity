@@ -19,6 +19,9 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
     private UnityFrameInputProcessingBoundary inputProcessingBoundary;
 
     [SerializeField]
+    private AutoLabMonkeyPresentation presentation;
+
+    [SerializeField]
     private int seed = 12345;
 
     [SerializeField]
@@ -33,6 +36,12 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
     [SerializeField]
     private float scrollVertical = -1f;
 
+    [SerializeField]
+    private float selectionPreviewSeconds = 0.2f;
+
+    [SerializeField]
+    private float completedStepPauseSeconds = 0.15f;
+
     private UnityPhysicalInputDriver physicalInput;
 
     private IEnumerator Start()
@@ -42,6 +51,13 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
 
         physicalInput =
             new UnityPhysicalInputDriver();
+
+        presentation.Bind(
+            physicalInput.Mouse);
+
+        presentation.BeginRun(
+            seed,
+            iterationCount);
 
         InteractionRunner runner =
             AutomationLabInteractionComposition
@@ -96,6 +112,10 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
                     sequence,
                     default))
             {
+                presentation.FailSelection(
+                    sequence,
+                    GetFailureDetail(selection));
+
                 yield break;
             }
 
@@ -104,10 +124,23 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
                     .GetAwaiter()
                     .GetResult();
 
+            presentation.SelectStep(
+                step);
+
             Debug.Log(
                 "MONKEY STEP SELECTED\n" +
                 $"Seed={seed}\n" +
                 $"Step={step}");
+
+            if (selectionPreviewSeconds > 0)
+            {
+                yield return
+                    new WaitForSecondsRealtime(
+                        selectionPreviewSeconds);
+            }
+
+            presentation.BeginStep(
+                step);
 
             Task execution =
                 monkey
@@ -123,9 +156,25 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
                     sequence,
                     step))
             {
+                presentation.FailStep(
+                    step,
+                    GetFailureDetail(execution));
+
                 yield break;
             }
+
+            presentation.CompleteStep(
+                step);
+
+            if (completedStepPauseSeconds > 0)
+            {
+                yield return
+                    new WaitForSecondsRealtime(
+                        completedStepPauseSeconds);
+            }
         }
+
+        presentation.CompleteRun();
 
         Debug.Log(
             "P12.1 SEEDED POINTER MONKEY PASS\n" +
@@ -137,7 +186,8 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
     private bool ValidateConfiguration()
     {
         if (interactionCamera == null ||
-            inputProcessingBoundary == null)
+            inputProcessingBoundary == null ||
+            presentation == null)
         {
             Debug.LogError(
                 "AutoLabSeededPointerMonkeyProbe composition is incomplete.");
@@ -163,6 +213,14 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
         {
             Debug.LogError(
                 "Monkey scroll delta cannot be zero.");
+            return false;
+        }
+
+        if (selectionPreviewSeconds < 0 ||
+            completedStepPauseSeconds < 0)
+        {
+            Debug.LogError(
+                "Monkey presentation delays cannot be negative.");
             return false;
         }
 
@@ -204,8 +262,27 @@ public sealed class AutoLabSeededPointerMonkeyProbe :
         return true;
     }
 
+    private static string GetFailureDetail(
+        Task task)
+    {
+        if (task.IsCanceled)
+            return "Task was cancelled.";
+
+        if (!task.IsFaulted)
+            return string.Empty;
+
+        Exception exception =
+            task.Exception?
+                .GetBaseException();
+
+        return exception == null
+            ? "Unknown execution failure."
+            : $"{exception.GetType().Name}: {exception.Message}";
+    }
+
     private void OnDestroy()
     {
+        presentation?.Unbind();
         physicalInput?.Dispose();
     }
 }

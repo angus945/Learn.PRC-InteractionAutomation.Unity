@@ -290,7 +290,7 @@ Runtime acceptance: **PASS**
 
 # Phase 12 — Deterministic Monkey
 
-Status: **P12.1 IMPLEMENTED — runtime acceptance pending**
+Status: **P12.2 IMPLEMENTED — runtime acceptance pending**
 
 P12.1 introduces the host-neutral:
 
@@ -351,4 +351,43 @@ P12.1 SEEDED POINTER MONKEY PASS
 Seed=12345
 Iterations=25
 All selected actions executed through InteractionRunner.
+```
+
+
+## P12.2 AutoLab Monkey Presentation
+
+Presentation remains AutoLab-owned for now. Core Monkey stays headless.
+
+```text
+AutoLabSeededPointerMonkeyProbe
+        ↓ lifecycle updates
+AutoLabMonkeyPresentation
+        ├─ actual virtual mouse position
+        ├─ pointer trail
+        ├─ pressed-state cursor emphasis
+        ├─ current action / target label
+        ├─ seed / iteration / status HUD
+        ├─ recent step history
+        └─ failure detail
+```
+
+The presenter binds directly to the virtual `Mouse` created by `UnityPhysicalInputDriver`, so the on-screen cursor reflects the actual submitted Unity Input System device rather than an inferred target position.
+
+AutoLab adds presentation-only pacing between selected user-level interactions:
+
+```text
+selection preview = 0.20 s
+post-step pause    = 0.15 s
+```
+
+These delays exist outside `SeededPointerMonkey` and do not change the internal interaction semantics.
+
+Expected behavior:
+
+```text
+HUD shows Seed / Iteration / Action / Target / Status
+visible crosshair follows virtual mouse
+trail shows recent pointer movement
+hold visibly shows DOWN state
+recent steps accumulate with PASS / FAIL
 ```
