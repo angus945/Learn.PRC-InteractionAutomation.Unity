@@ -61,7 +61,7 @@ UnityPhysicalInputDriver
 Unity Input System virtual mouse
 ```
 
-Completion means input submission, not host/UI/gameplay completion. Sequential submissions compose without caller-inserted processing barriers.
+Completion means input submission, not host/UI/gameplay completion. Ordinary sequential submissions compose without caller-inserted processing barriers. Sustained gestures may require an explicit host-processing boundary between gesture phases.
 
 ## Phase 4 — Application Input Route
 
@@ -223,12 +223,20 @@ Move(source center)
 ↓
 Left Down
 ↓
+host input processing boundary
+↓
 Move(destination center) while held
+↓
+host input processing boundary
 ↓
 Left Up
 ```
 
 After PointerDown succeeds, cancellation or failure during the held portion still attempts a non-cancellable PointerUp cleanup.
+
+The first Unity runtime attempt queued Down → Move-held → Up before EventSystem had an intermediate processing opportunity. Evidence: `BeginDrag=0` and the destination Toggle received a normal click instead. Phase 10 therefore introduced `IHostInputProcessingBoundary`; Unity supplies `UnityFrameInputProcessingBoundary` from `Module.InteractionAutomation.Runner.Unity3D`.
+
+This does not change `IPhysicalInputDriver` completion semantics. The boundary only provides a host processing opportunity between sustained gesture phases.
 
 The AutoLab runtime probe uses `button.confirm` as the source and `toggle.music` as the destination. The Button keeps its ButtonTargetKind and gains PointerDrag capability; Kind does not dispatch the action.
 
@@ -277,10 +285,10 @@ This is where `OSSpace`, serialization, and stable cross-process kind identity m
 
 ```text
 Workspace.InteractionAutomation
-0442d5859493678630d64d2d08143862c027758a
+010789b2d0bcd0ba5d652916db6271de64c7154f
 
 Workspace.InteractionAutomation.Unity3D
-1396d829c6a1f741a3cca7cf3b22f1468aade382
+b9d0f99ef079180c376dccd9d89be003bf8c8267
 ```
 
 ## Current Learning Position
@@ -289,5 +297,5 @@ Workspace.InteractionAutomation.Unity3D
 Phases 1–9  COMPLETE
 P10 boundary refactor COMPLETE
 Phase 10 Drag IMPLEMENTED
-Unity runtime acceptance PENDING
+Unity runtime acceptance PENDING — rerun after processing-boundary fix
 ```

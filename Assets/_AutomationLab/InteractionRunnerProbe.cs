@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Module.InteractionAutomation.Availability;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
 using Module.InteractionAutomation.Runner;
+using Module.InteractionAutomation.Runner.Unity3D;
 using Module.InteractionAutomation.Targets;
 using UnityEngine;
 
@@ -23,6 +24,9 @@ public sealed class InteractionRunnerProbe :
 
     [SerializeField]
     private DropZoneProbe dropZoneProbe;
+
+    [SerializeField]
+    private UnityFrameInputProcessingBoundary inputProcessingBoundary;
 
     private UnityPhysicalInputDriver physicalInput;
     private InteractionRunner runner;
@@ -61,6 +65,14 @@ public sealed class InteractionRunnerProbe :
             yield break;
         }
 
+        if (inputProcessingBoundary == null)
+        {
+            Debug.LogError(
+                "UnityFrameInputProcessingBoundary is not assigned.");
+
+            yield break;
+        }
+
         physicalInput =
             new UnityPhysicalInputDriver();
 
@@ -76,7 +88,8 @@ public sealed class InteractionRunnerProbe :
             new InteractionRunner(
                 targetSource,
                 availability,
-                physicalInput);
+                physicalInput,
+                inputProcessingBoundary);
 
         // Allow normal Unity runtime composition to settle.
         yield return null;
