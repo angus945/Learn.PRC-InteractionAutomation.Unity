@@ -1,0 +1,22 @@
+{
+  "name": "Project.InteractionAutomationLab.Editor",
+  "rootNamespace": "Project.InteractionAutomationLab.Editor",
+  "references": [
+    "Project.InteractionAutomationLab",
+    "Module.InteractionAutomation.Observation.Unity3D",
+    "Module.InteractionAutomation.Targets",
+    "Module.InteractionAutomation.Targets.Unity3D",
+    "Module.InteractionAutomation.Timing.Unity3D",
+    "Unity.InputSystem",
+    "Unity.ugui"
+  ],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
