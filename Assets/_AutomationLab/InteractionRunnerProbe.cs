@@ -8,6 +8,7 @@ using Module.InteractionAutomation.PhysicalInput.Unity3D;
 using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.Runner;
 using Module.InteractionAutomation.Runner.Unity3D;
+using Module.InteractionAutomation.Verification.Unity3D;
 using Module.InteractionAutomation.Targets;
 using Module.Verification.Oracle;
 using UnityEngine;
@@ -25,22 +26,22 @@ public sealed class InteractionRunnerProbe :
     private ToggleStateProbe toggleStateProbe;
 
     [SerializeField]
-    private UnityPointerDragObserver dragSourceProbe;
+    private UnityPointerDragObserver dragObserver;
 
     [SerializeField]
-    private UnityPointerDropObserver dropZoneProbe;
+    private UnityPointerDropObserver dropObserver;
 
     [SerializeField]
-    private UnityPointerHoverObserver pointerHoverProbe;
+    private UnityPointerHoverObserver pointerHoverObserver;
 
     [SerializeField]
-    private UnityPointerClickObserver pointerClickCountProbe;
+    private UnityPointerClickObserver pointerClickObserver;
 
     [SerializeField]
-    private UnityPointerPressObserver pointerHoldProbe;
+    private UnityPointerPressObserver pointerPressObserver;
 
     [SerializeField]
-    private UnityPointerScrollObserver pointerScrollProbe;
+    private UnityPointerScrollObserver pointerScrollObserver;
 
     [SerializeField]
     private UnityFrameInputProcessingBoundary inputProcessingBoundary;
@@ -85,11 +86,18 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (buttonClickCounter.Count != 1)
+        EvaluationReport buttonVerification =
+            AutoLabButtonClickVerificationProfile
+                .Create()
+                .Evaluate(
+                    "button.confirm",
+                    new AutoLabButtonClickObservation(
+                        buttonClickCounter.Count));
+
+        if (ReportVerificationFailure(
+                "RUNNER BUTTON",
+                buttonVerification))
         {
-            Debug.LogError(
-                "RUNNER BUTTON FAILED\n" +
-                $"ClickCount={buttonClickCounter.Count}");
             yield break;
         }
 
@@ -111,20 +119,26 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (toggleStateProbe.ChangeCount != 1 ||
-            !toggleStateProbe.LastValue)
+        EvaluationReport toggleVerification =
+            AutoLabToggleVerificationProfile
+                .Create()
+                .Evaluate(
+                    "toggle.music",
+                    new AutoLabToggleObservation(
+                        toggleStateProbe.ChangeCount,
+                        toggleStateProbe.LastValue));
+
+        if (ReportVerificationFailure(
+                "RUNNER TOGGLE",
+                toggleVerification))
         {
-            Debug.LogError(
-                "RUNNER TOGGLE FAILED\n" +
-                $"ChangeCount={toggleStateProbe.ChangeCount}\n" +
-                $"LastValue={toggleStateProbe.LastValue}");
             yield break;
         }
 
         Debug.Log("PHASE 9 RUNNER INTEGRATION PASS");
 
-        dragSourceProbe.ResetObservation();
-        dropZoneProbe.ResetObservation();
+        dragObserver.ResetObservation();
+        dropObserver.ResetObservation();
 
         Debug.Log("RUNNER DRAG START");
 
@@ -144,30 +158,39 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        var dragObservation =
-            new DragObservation(
-                dragSourceProbe.Capture(),
-                dropZoneProbe.Capture());
+        EvaluationReport dragLifecycleVerification =
+            UnityPointerVerificationProfiles
+                .DragLifecycle()
+                .Evaluate(
+                    "button.confirm->toggle.music",
+                    dragObserver.Capture());
 
-        EvaluationReport dragVerification =
-            DragVerificationProfile
+        if (ReportVerificationFailure(
+                "POINTER DRAG LIFECYCLE",
+                dragLifecycleVerification))
+        {
+            yield break;
+        }
+
+        EvaluationReport dropVerification =
+            AutoLabDropVerificationProfile
                 .Create()
                 .Evaluate(
                     "button.confirm->toggle.music",
-                    dragObservation);
+                    dropObserver.Capture());
 
         if (ReportVerificationFailure(
-                "POINTER DRAG",
-                dragVerification))
+                "POINTER DRAG DROP",
+                dropVerification))
         {
             yield break;
         }
 
         Debug.Log(
             "POINTER DRAG PASS\n" +
-            "Observation captured separately from Oracle judgment.");
+            "Unity host contract and AutoLab drop expectation passed.");
 
-        pointerScrollProbe.ResetObservation();
+        pointerScrollObserver.ResetObservation();
 
         Debug.Log("RUNNER SCROLL START");
 
@@ -188,20 +211,28 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (pointerScrollProbe.ScrollCount != 1)
+        var scrollObservation =
+            pointerScrollObserver.Capture();
+
+        EvaluationReport scrollVerification =
+            UnityPointerVerificationProfiles
+                .ScrollObserved()
+                .Evaluate(
+                    "toggle.music",
+                    scrollObservation);
+
+        if (ReportVerificationFailure(
+                "POINTER SCROLL",
+                scrollVerification))
         {
-            Debug.LogError(
-                "POINTER SCROLL FAILED\n" +
-                $"ScrollCount={pointerScrollProbe.ScrollCount}\n" +
-                $"LastDelta={pointerScrollProbe.LastDelta}");
             yield break;
         }
 
         Debug.Log(
             "POINTER SCROLL PASS\n" +
-            $"Delta={pointerScrollProbe.LastDelta}");
+            $"Delta={scrollObservation.LastDelta}");
 
-        pointerHoverProbe.ResetObservation();
+        pointerHoverObserver.ResetObservation();
 
         Debug.Log("RUNNER HOVER START");
 
@@ -222,19 +253,24 @@ public sealed class InteractionRunnerProbe :
         int mouseDeviceId =
             physicalInput.Mouse.deviceId;
 
-        if (!pointerHoverProbe.IsHoveredByDevice(mouseDeviceId) ||
-            pointerHoverProbe.GetEnterCount(mouseDeviceId) < 1)
+        EvaluationReport hoverVerification =
+            UnityPointerVerificationProfiles
+                .HoverObserved()
+                .Evaluate(
+                    "button.confirm",
+                    pointerHoverObserver.Capture(
+                        mouseDeviceId));
+
+        if (ReportVerificationFailure(
+                "POINTER HOVER",
+                hoverVerification))
         {
-            Debug.LogError(
-                "POINTER HOVER FAILED\n" +
-                $"DeviceId={mouseDeviceId}\n" +
-                $"EnterCount={pointerHoverProbe.GetEnterCount(mouseDeviceId)}");
             yield break;
         }
 
         Debug.Log("POINTER HOVER PASS");
 
-        pointerClickCountProbe.ResetObservation();
+        pointerClickObserver.ResetObservation();
 
         Debug.Log("RUNNER DOUBLE CLICK START");
 
@@ -252,20 +288,23 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (pointerClickCountProbe.EventCount < 2 ||
-            pointerClickCountProbe.MaxClickCount < 2)
+        EvaluationReport doubleClickVerification =
+            UnityPointerVerificationProfiles
+                .DoubleClick()
+                .Evaluate(
+                    "button.confirm",
+                    pointerClickObserver.Capture());
+
+        if (ReportVerificationFailure(
+                "POINTER DOUBLE CLICK",
+                doubleClickVerification))
         {
-            Debug.LogError(
-                "POINTER DOUBLE CLICK FAILED\n" +
-                $"EventCount={pointerClickCountProbe.EventCount}\n" +
-                $"LastClickCount={pointerClickCountProbe.LastClickCount}\n" +
-                $"MaxClickCount={pointerClickCountProbe.MaxClickCount}");
             yield break;
         }
 
         Debug.Log("POINTER DOUBLE CLICK PASS");
 
-        pointerHoldProbe.ResetObservation();
+        pointerPressObserver.ResetObservation();
 
         Debug.Log("RUNNER HOLD START");
 
@@ -284,23 +323,26 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (pointerHoldProbe.DownCount != 1 ||
-            pointerHoldProbe.UpCount != 1 ||
-            pointerHoldProbe.PressedFrameCount < 1 ||
-            pointerHoldProbe.IsPressed)
+        var holdObservation =
+            pointerPressObserver.Capture();
+
+        EvaluationReport holdVerification =
+            UnityPointerVerificationProfiles
+                .HoldLifecycle()
+                .Evaluate(
+                    "button.confirm",
+                    holdObservation);
+
+        if (ReportVerificationFailure(
+                "POINTER HOLD",
+                holdVerification))
         {
-            Debug.LogError(
-                "POINTER HOLD FAILED\n" +
-                $"Down={pointerHoldProbe.DownCount}\n" +
-                $"Up={pointerHoldProbe.UpCount}\n" +
-                $"HeldFrames={pointerHoldProbe.PressedFrameCount}\n" +
-                $"IsPressed={pointerHoldProbe.IsPressed}");
             yield break;
         }
 
         Debug.Log(
             "POINTER HOLD PASS\n" +
-            $"HeldFrames={pointerHoldProbe.PressedFrameCount}");
+            $"HeldFrames={holdObservation.PressedFrameCount}");
 
         Debug.Log(
             "PHASE 10 POINTER EXECUTION PASS\n" +
@@ -312,12 +354,12 @@ public sealed class InteractionRunnerProbe :
     {
         if (buttonClickCounter == null ||
             toggleStateProbe == null ||
-            dragSourceProbe == null ||
-            dropZoneProbe == null ||
-            pointerHoverProbe == null ||
-            pointerClickCountProbe == null ||
-            pointerHoldProbe == null ||
-            pointerScrollProbe == null ||
+            dragObserver == null ||
+            dropObserver == null ||
+            pointerHoverObserver == null ||
+            pointerClickObserver == null ||
+            pointerPressObserver == null ||
+            pointerScrollObserver == null ||
             inputProcessingBoundary == null)
         {
             Debug.LogError(

@@ -897,7 +897,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1163597998}
   - component: {fileID: 1163597999}
-  - component: {fileID: 1163598000}
   - component: {fileID: 1163598001}
   - component: {fileID: 1163598002}
   - component: {fileID: 1163598003}
@@ -937,18 +936,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d06698158c1fd7b4ab9aa60a101aa60a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TargetDiscoveryProbe
---- !u!114 &1163598000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1163597996}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48a35d79f5aa4274aa9c753e7722a784, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VirtualMouseProbe
 --- !u!114 &1163598001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1004,12 +991,12 @@ MonoBehaviour:
   interactionCamera: {fileID: 1134976234}
   buttonClickCounter: {fileID: 11310483}
   toggleStateProbe: {fileID: 36762818}
-  dragSourceProbe: {fileID: 1900000101}
-  dropZoneProbe: {fileID: 1900000102}
-  pointerHoverProbe: {fileID: 11310482}
-  pointerClickCountProbe: {fileID: 1900000104}
-  pointerHoldProbe: {fileID: 1900000105}
-  pointerScrollProbe: {fileID: 1900000106}
+  dragObserver: {fileID: 1900000101}
+  dropObserver: {fileID: 1900000102}
+  pointerHoverObserver: {fileID: 11310482}
+  pointerClickObserver: {fileID: 1900000104}
+  pointerPressObserver: {fileID: 1900000105}
+  pointerScrollObserver: {fileID: 1900000106}
   inputProcessingBoundary: {fileID: 1900000103}
 --- !u!1 &1344203428
 GameObject:

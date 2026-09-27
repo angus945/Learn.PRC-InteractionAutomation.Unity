@@ -169,12 +169,12 @@ Workspace.InteractionAutomation
 7213f271aca0754a84d0055f073190e0f17dcd09
 
 Workspace.InteractionAutomation.Unity3D
-3887c81350b8889220b89d0f0b896301751668a6
+599f676111f59388d2375adc3644a81f524ee138
 ```
 
 # Phase 11 — Observation / Verification
 
-Status: **P11.1 ACCEPTED — Unity observation adapters extracted**
+Status: **P11.2 IMPLEMENTED — runtime acceptance pending**
 
 The full `Workspace.Verification` repository is installed as one project submodule:
 
@@ -243,3 +243,32 @@ Module.InteractionAutomation.Observation.Unity3D
 Each observer captures an immutable `UnityPointer*Observation`. These adapters report what Unity observed and contain no Oracle, PASS/FAIL, product expectation, or logging policy.
 
 AutoLab still owns product probes, scenario observations, and Oracle expectations.
+
+
+## P11.2 verification ownership
+
+Reusable Unity-host expectations now live in:
+
+```text
+Module.InteractionAutomation.Verification.Unity3D
+```
+
+Reusable Oracle profiles cover:
+
+```text
+Drag lifecycle
+Scroll observed
+Hover observed
+Double-click EventSystem semantics
+Hold press/release lifecycle
+```
+
+AutoLab retains only project-specific verification:
+
+```text
+button.confirm product callback
+toggle.music product state change
+button.confirm → toggle.music drop expectation
+```
+
+The obsolete generic `VirtualMouseProbe` was removed because virtual mouse construction is already covered by `UnityPhysicalInputDriverTests.Constructor_AddsOperationalVirtualMouse`.
