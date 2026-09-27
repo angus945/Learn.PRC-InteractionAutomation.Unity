@@ -1,162 +1,152 @@
-// using System.Collections;
-// using System.Threading.Tasks;
-// using Module.InteractionAutomation.PhysicalInput.Unity3D;
-// using Module.InteractionAutomation.Runner;
-// using Module.InteractionAutomation.Targets;
-// using UnityEngine;
+using System.Collections;
+using System.Threading.Tasks;
+using Module.InteractionAutomation.Availability;
+using Module.InteractionAutomation.PhysicalInput.Unity3D;
+using Module.InteractionAutomation.Runner;
+using Module.InteractionAutomation.Targets;
+using UnityEngine;
 
-// public sealed class InteractionRunnerProbe :
-//     MonoBehaviour
-// {
-//     [SerializeField]
-//     private Camera interactionCamera;
+public sealed class InteractionRunnerProbe :
+    MonoBehaviour
+{
+    [SerializeField]
+    private Camera interactionCamera;
 
-//     [SerializeField]
-//     private ButtonClickCounter buttonClickCounter;
+    [SerializeField]
+    private ButtonClickCounter buttonClickCounter;
 
-//     [SerializeField]
-//     private ToggleStateProbe toggleStateProbe;
+    [SerializeField]
+    private ToggleStateProbe toggleStateProbe;
 
-//     private UnityPhysicalInputDriver physicalInput;
+    private UnityPhysicalInputDriver physicalInput;
+    private InteractionRunner runner;
 
-//     private InteractionRunner runner;
+    private IEnumerator Start()
+    {
+        if (buttonClickCounter == null)
+        {
+            Debug.LogError(
+                "ButtonClickCounter is not assigned.");
 
-//     private IEnumerator Start()
-//     {
-//         if (buttonClickCounter == null)
-//         {
-//             Debug.LogError(
-//                 "ButtonClickCounter is not assigned.");
+            yield break;
+        }
 
-//             yield break;
-//         }
+        if (toggleStateProbe == null)
+        {
+            Debug.LogError(
+                "ToggleStateProbe is not assigned.");
 
-//         if (toggleStateProbe == null)
-//         {
-//             Debug.LogError(
-//                 "ToggleStateProbe is not assigned.");
+            yield break;
+        }
 
-//             yield break;
-//         }
+        physicalInput =
+            new UnityPhysicalInputDriver();
 
-//         physicalInput =
-//             new UnityPhysicalInputDriver();
+        var targetSource =
+            AutomationLabInteractionComposition
+                .CreateTargetSource(
+                    interactionCamera);
 
-//         var targetSource =
-//             AutomationLabInteractionComposition
-//                 .CreateTargetSource(
-//                     interactionCamera);
+        var availability =
+            new SnapshotInteractionAvailabilityEvaluator();
 
-//         runner =
-//             new InteractionRunner(
-//                 targetSource,
-//                 physicalInput);
+        runner =
+            new InteractionRunner(
+                targetSource,
+                availability,
+                physicalInput);
 
-//         // Allow normal Unity runtime composition to settle.
-//         yield return null;
+        // Allow normal Unity runtime composition to settle.
+        yield return null;
 
-//         buttonClickCounter.ResetCount();
+        buttonClickCounter.ResetCount();
 
-//         toggleStateProbe.ResetObservation(
-//             initialValue: false);
+        toggleStateProbe.ResetObservation(
+            initialValue: false);
 
-//         //
-//         // ============================================
-//         // Button
-//         // ============================================
-//         //
+        Debug.Log(
+            "RUNNER BUTTON START");
 
-//         Debug.Log(
-//             "RUNNER BUTTON START");
+        Task buttonClick =
+            runner
+                .PointerClickAsync(
+                    new InteractionTargetId(
+                        "button.confirm"))
+                .AsTask();
 
-//         Task buttonClick =
-//             runner
-//                 .PointerClickAsync(
-//                     new InteractionTargetId(
-//                         "button.confirm"))
-//                 .AsTask();
+        while (!buttonClick.IsCompleted)
+            yield return null;
 
-//         while (!buttonClick.IsCompleted)
-//             yield return null;
+        if (buttonClick.IsFaulted)
+        {
+            Debug.LogException(
+                buttonClick.Exception?
+                    .GetBaseException());
 
-//         if (buttonClick.IsFaulted)
-//         {
-//             Debug.LogException(
-//                 buttonClick.Exception?
-//                     .GetBaseException());
+            yield break;
+        }
 
-//             yield break;
-//         }
+        // Runner completion only means input submission.
+        // Give Unity product processing a normal frame.
+        yield return null;
 
-//         //
-//         // Runner completion only means input submission.
-//         // Give Unity product processing a normal frame.
-//         //
-//         yield return null;
+        if (buttonClickCounter.Count != 1)
+        {
+            Debug.LogError(
+                "RUNNER BUTTON FAILED\n" +
+                $"Expected ClickCount=1\n" +
+                $"Actual={buttonClickCounter.Count}");
 
-//         if (buttonClickCounter.Count != 1)
-//         {
-//             Debug.LogError(
-//                 "RUNNER BUTTON FAILED\n" +
-//                 $"Expected ClickCount=1\n" +
-//                 $"Actual={buttonClickCounter.Count}");
+            yield break;
+        }
 
-//             yield break;
-//         }
+        Debug.Log(
+            "RUNNER BUTTON PASS");
 
-//         Debug.Log(
-//             "RUNNER BUTTON PASS");
+        Debug.Log(
+            "RUNNER TOGGLE START");
 
-//         //
-//         // ============================================
-//         // Toggle
-//         // ============================================
-//         //
+        Task toggleClick =
+            runner
+                .PointerClickAsync(
+                    new InteractionTargetId(
+                        "toggle.music"))
+                .AsTask();
 
-//         Debug.Log(
-//             "RUNNER TOGGLE START");
+        while (!toggleClick.IsCompleted)
+            yield return null;
 
-//         Task toggleClick =
-//             runner
-//                 .PointerClickAsync(
-//                     new InteractionTargetId(
-//                         "toggle.music"))
-//                 .AsTask();
+        if (toggleClick.IsFaulted)
+        {
+            Debug.LogException(
+                toggleClick.Exception?
+                    .GetBaseException());
 
-//         while (!toggleClick.IsCompleted)
-//             yield return null;
+            yield break;
+        }
 
-//         if (toggleClick.IsFaulted)
-//         {
-//             Debug.LogException(
-//                 toggleClick.Exception?
-//                     .GetBaseException());
+        yield return null;
 
-//             yield break;
-//         }
+        if (toggleStateProbe.ChangeCount != 1 ||
+            !toggleStateProbe.LastValue)
+        {
+            Debug.LogError(
+                "RUNNER TOGGLE FAILED\n" +
+                $"ChangeCount={toggleStateProbe.ChangeCount}\n" +
+                $"LastValue={toggleStateProbe.LastValue}");
 
-//         yield return null;
+            yield break;
+        }
 
-//         if (toggleStateProbe.ChangeCount != 1 ||
-//             !toggleStateProbe.LastValue)
-//         {
-//             Debug.LogError(
-//                 "RUNNER TOGGLE FAILED\n" +
-//                 $"ChangeCount={toggleStateProbe.ChangeCount}\n" +
-//                 $"LastValue={toggleStateProbe.LastValue}");
+        Debug.Log(
+            "PHASE 9 RUNNER INTEGRATION PASS\n" +
+            "button.confirm -> available PointerClick PASS\n" +
+            "toggle.music -> available PointerClick PASS\n" +
+            "Both targets used the same availability-aware InteractionRunner.");
+    }
 
-//             yield break;
-//         }
-
-//         Debug.Log(
-//             "PHASE 8 INTERACTION RUNNER PASS\n" +
-//             "button.confirm -> PointerClick PASS\n" +
-//             "toggle.music -> PointerClick PASS\n" +
-//             "Both targets used the same InteractionRunner.");
-//     }
-
-//     private void OnDestroy()
-//     {
-//         physicalInput?.Dispose();
-//     }
-// }
+    private void OnDestroy()
+    {
+        physicalInput?.Dispose();
+    }
+}

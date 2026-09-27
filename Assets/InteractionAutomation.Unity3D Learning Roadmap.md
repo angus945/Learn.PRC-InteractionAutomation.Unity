@@ -7,22 +7,26 @@ Learn the architecture of physical interaction automation in Unity without turni
 Current model:
 
 ```text
-Application-defined Target Kind
+Interaction Target
         ↓
 InteractionTargetSnapshot
         ├─ Id
         ├─ Kind
         ├─ Bounds
-        └─ Capabilities
+        ├─ Capabilities
+        ├─ IsVisible
+        └─ IsEnabled
         ↓
-Capability-driven interaction
+Availability Evaluation
+        ↓
+InteractionRunner
         ↓
 IPhysicalInputDriver
         ↓
 Unity normal input / product route
 ```
 
-Automation decides **where and how to input**. It does not directly invoke product behavior.
+Automation decides where and how to submit input. It does not directly invoke product behavior.
 
 ---
 
@@ -30,9 +34,7 @@ Automation decides **where and how to input**. It does not directly invoke produ
 
 Status: **Complete**
 
-- Target exposure is explicit through `InteractionTargetBinding`.
-- Target discovery produces host-neutral snapshots.
-- Unity objects do not leak into the neutral target contract.
+Explicit target exposure through `InteractionTargetBinding`; discovery produces host-neutral snapshots.
 
 ## Phase 2 — Canonical Coordinate Boundary
 
@@ -43,7 +45,7 @@ ApplicationSpace
 OSSpace
 ```
 
-Unity local automation uses `ApplicationSpace`. Host-specific screen/window/DPI details stay inside adapters.
+Unity local automation uses `ApplicationSpace`. Host-specific coordinate conversion stays inside adapters.
 
 ## Phase 3 — Physical Input Adapter
 
@@ -57,7 +59,7 @@ UnityPhysicalInputDriver
 Unity Input System virtual mouse
 ```
 
-Operation completion means **submitted**, not host/UI/gameplay processed. Sequential `Move → Down → Up` submissions compose without consumer-inserted processing barriers.
+Completion means input submission, not host/UI/gameplay completion. Sequential submissions compose without caller-inserted processing barriers.
 
 ## Phase 4 — Application Input Route
 
@@ -75,31 +77,15 @@ EventSystem
 normal product behavior
 ```
 
-Physical and automation pointers can remain separate with `AllPointersAsIs`.
-
 ## Phase 5 — Capability Generalization
 
 Status: **Complete**
 
-Button and Toggle both use:
-
-```text
-PointerClick
-↓
-Bounds.Center
-↓
-Move
-Down
-Up
-```
-
-Widget/product type does not choose the physical action implementation.
+Button and Toggle both use the same `PointerClick` physical interaction route. Product type does not choose the input implementation.
 
 ## Phase 6 — Geometry Strategy
 
 Status: **Complete**
-
-Geometry is a Unity adapter strategy rather than a `RectTransform` assumption:
 
 ```text
 IUnityInteractionTargetGeometryProvider
@@ -107,17 +93,15 @@ IUnityInteractionTargetGeometryProvider
         └─ Renderer      → ApplicationSpace Rect
 ```
 
-`InteractionTargetSnapshot.Bounds` now represents interaction geometry rather than one Unity geometry technology.
-
-Detailed clipping, occlusion, renderer aggregation, and multi-camera policy are deferred until they become actual requirements.
+Target bounds represent interaction geometry rather than a specific Unity geometry technology.
 
 ## Phase 7 — Same Interaction, Different Product Domain
 
-Status: **Complete — architecture consolidated**
+Status: **Complete**
 
-The closed `InteractionTargetRole` enum has been removed from the neutral core.
+The closed `InteractionTargetRole` enum was removed.
 
-Target taxonomy is now open and process-local:
+Target taxonomy is open and process-local:
 
 ```text
 IInteractionTargetKind
@@ -125,104 +109,81 @@ IInteractionTargetKind
         ├─ ButtonTargetKind
         ├─ ToggleTargetKind
         └─ ChestTargetKind
-
-InteractionTargetKindRegistry
-        ↓
-InteractionTargetSnapshot.Kind
 ```
 
-Unity composition maps host component types to registered application kinds:
+`Kind` describes what the target is. `Capabilities` describe how automation may interact with it.
+
+The registry currently uses CLR `Type` identity only. Stable serialized/cross-process kind IDs are deferred.
+
+## Phase 8 — Interaction Runner
+
+Status: **Complete**
+
+Reusable host-neutral workflow:
 
 ```text
-Button   → ButtonTargetKind
-Toggle   → ToggleTargetKind
-Renderer → ChestTargetKind
-```
-
-The architecture now makes the distinction explicit:
-
-```text
-Kind
-= what the target is
-
-Capabilities
-= how automation may interact with it
-```
-
-Physical action selection remains capability-driven. Do not dispatch physical actions by target kind.
-
-The registry intentionally uses CLR `Type` identity only. Persistence, serialization, replay compatibility, and stable cross-process kind IDs are not current requirements.
-
-A separate micro-milestone for a 3D click is not required before continuing. The reusable Runner is the next place to exercise the same capability across different product domains.
-
----
-
-# Phase 8 — Interaction Runner
-
-Status: **NEXT**
-
-Goal:
-
-> Stop writing one-off probes for each interaction and introduce the smallest reusable application workflow.
-
-Concept:
-
-```text
-Capture targets
+Capture
 ↓
-Select target
+Resolve by InteractionTargetId
 ↓
-Validate requested capability
+Validate capability
 ↓
-Derive interaction point
+derive interaction point
 ↓
-Submit physical input
+submit physical input
 ```
 
-The first Runner should know only:
-
-```text
-IInteractionTargetSource
-IPhysicalInputDriver
-InteractionTargetSnapshot
-PhysicalInteractionCapabilities
-```
-
-It must not know:
-
-```text
-Unity
-Button
-Toggle
-Renderer
-Collider
-EventSystem
-specific Target Kind
-```
-
-The first reusable operation is `PointerClick`.
+`InteractionRunner` does not know Unity, EventSystem, Button, Toggle, Renderer, Collider, or specific target kinds.
 
 ## Phase 9 — Target Availability
 
-Status: Pending
+Status: **Complete**
 
-Separate:
+Discovery facts and operability are separate concerns:
 
 ```text
-Exists
-HasGeometry
-Visible
-InputReachable
-GameplayEligible
+InteractionTargetSnapshot
+        ↓
+IInteractionAvailabilityEvaluator
+        ↓
+InteractionAvailability
+        ↓
+InteractionRunner
 ```
 
-Discovery and operability are not the same concept.
+Current reasons:
 
-## Phase 10 — New Action Shapes
+```text
+NotVisible
+Disabled
+InvalidGeometry
+```
 
-Status: Pending
+Availability uses flags so multiple causes can be reported at once.
 
-Add only actions that introduce a new architectural problem:
+Current scope deliberately does not yet model:
+
+```text
+occlusion
+modal blocking
+offscreen clipping
+gameplay eligibility
+Button.interactable / product-specific rules
+```
+
+Those are future evaluator concerns if evidence requires them.
+
+Unavailable targets are rejected before any physical input is submitted.
+
+---
+
+# Phase 10 — New Action Shapes
+
+Status: **NEXT**
+
+Add only actions that introduce a genuinely different interaction shape.
+
+Recommended order:
 
 ```text
 Drag
@@ -230,7 +191,19 @@ Keyboard / TextInput
 Scroll
 ```
 
-Do not create a learning milestone for every input enum value.
+First target: **Drag**, because it introduces a sustained interaction sequence:
+
+```text
+Move to source
+↓
+PointerDown
+↓
+one or more Move operations while held
+↓
+PointerUp
+```
+
+Do not create a separate learning milestone for every input enum value.
 
 ## Phase 11 — Observation / Verification
 
@@ -247,7 +220,7 @@ Observer / Verification → Result
 
 Status: Pending
 
-Monkey is selection policy over existing target/capability/runner primitives, not another interaction framework.
+Monkey is a selection policy over existing target, capability, availability, and runner primitives.
 
 ## Phase 13 — Remote / OS Automation
 
@@ -273,15 +246,15 @@ This is where `OSSpace`, serialization, and stable cross-process kind identity m
 
 ```text
 Workspace.InteractionAutomation
-4d7247eb4d0ca049e1ccb5cc1f73c3d1d875caca
+fff18e83df0922daa3d1d5b5e6c417588e490b99
 
 Workspace.InteractionAutomation.Unity3D
-5edfeab613ffbdd0a7830882bc424cece0143b7b
+1396d829c6a1f741a3cca7cf3b22f1468aade382
 ```
 
 ## Current Learning Position
 
 ```text
-Phases 1–7  COMPLETE
-Phase 8       START HERE
+Phases 1–9  COMPLETE
+Phase 10      START HERE
 ```
