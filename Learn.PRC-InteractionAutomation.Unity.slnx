@@ -2,12 +2,16 @@
   <Project Path="Module.InteractionAutomation.Observation.Unity3D.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Module.Verification.SystemFact.Observability.csproj" />
-  <Project Path="Module.InteractionAutomation.Runner.csproj" />
+  <Project Path="Framework.InteractionAutomation.Runner.csproj" />
   <Project Path="Module.Verification.StateSnapshot.csproj" />
   <Project Path="Module.InteractionAutomation.Verification.Unity3D.Tests.csproj" />
   <Project Path="Module.InteractionAutomation.Targets.csproj" />
-  <Project Path="Module.InteractionAutomation.Runner.Tests.csproj" />
-  <Project Path="Module.InteractionAutomation.Runner.Unity3D.csproj" />
+  <Project Path="Framework.InteractionAutomation.Runner.Tests.csproj" />
+  <Project Path="Module.InteractionAutomation.Timing.Unity3D.csproj" />
+  <Project Path="Module.InteractionAutomation.Timing.csproj" />
+  <Project Path="Module.InteractionAutomation.Timing.Tests.csproj" />
+  <Project Path="Framework.InteractionAutomation.Runner.Unity3D.csproj" />
+  <Project Path="Framework.InteractionAutomation.Runner.Unity3D.Tests.csproj" />
   <Project Path="Module.Verification.RuntimeControl.csproj" />
   <Project Path="Module.InteractionAutomation.Verification.Unity3D.csproj" />
   <Project Path="Module.InteractionAutomation.PhysicalInput.csproj" />
@@ -15,7 +19,7 @@
   <Project Path="Module.InteractionAutomation.Targets.Unity3D.csproj" />
   <Project Path="Module.Communication.JsonRpc.WebSocket.csproj" />
   <Project Path="Module.InteractionAutomation.Availability.csproj" />
-  <Project Path="Module.InteractionAutomation.Monkey.csproj" />
+  <Project Path="Framework.InteractionAutomation.Monkey.csproj" />
   <Project Path="Module.Verification.SystemFact.csproj" />
   <Project Path="Module.InteractionAutomation.Coordinates.csproj" />
   <Project Path="Module.Communication.JsonRpc.csproj" />
@@ -29,13 +33,13 @@
   <Project Path="Module.Communication.Unity3D.PlayMode.Tests.csproj" />
   <Project Path="Module.InteractionAutomation.Availability.Tests.csproj" />
   <Project Path="Module.Communication.Unity3D.Tests.csproj" />
-  <Project Path="Module.InteractionAutomation.Monkey.Unity3D.csproj" />
+  <Project Path="Framework.InteractionAutomation.Monkey.Unity3D.csproj" />
   <Project Path="Module.Verification.TraceBuffer.csproj" />
   <Project Path="Module.InteractionAutomation.Targets.Unity3D.Tests.csproj" />
   <Project Path="Module.InteractionAutomation.Coordinates.Unity3D.csproj" />
   <Project Path="Module.InteractionAutomation.PhysicalInput.Unity3D.csproj" />
-  <Project Path="Module.InteractionAutomation.Monkey.Tests.csproj" />
+  <Project Path="Framework.InteractionAutomation.Monkey.Tests.csproj" />
   <Project Path="Module.InteractionAutomation.Coordinates.Unity3D.Tests.csproj" />
-  <Project Path="Module.InteractionAutomation.Monkey.Unity3D.Tests.csproj" />
+  <Project Path="Framework.InteractionAutomation.Monkey.Unity3D.Tests.csproj" />
   <Project Path="Project.RpcLab.Contracts.csproj" />
 </Solution>

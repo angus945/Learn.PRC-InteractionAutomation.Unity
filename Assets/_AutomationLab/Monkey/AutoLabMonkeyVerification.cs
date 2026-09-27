@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Module.InteractionAutomation.Monkey;
+using Framework.InteractionAutomation.Monkey;
 using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.Targets;
 using Module.Verification.Oracle;

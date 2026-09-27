@@ -1,4 +1,4 @@
-using Module.InteractionAutomation.Monkey;
+using Framework.InteractionAutomation.Monkey;
 using Module.InteractionAutomation.Targets;
 
 public sealed class AutoLabMonkeyDragDestinationPolicy :

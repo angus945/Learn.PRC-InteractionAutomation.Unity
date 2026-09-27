@@ -1,8 +1,8 @@
 using System.Collections;
 using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
-using Module.InteractionAutomation.Runner;
-using Module.InteractionAutomation.Runner.Unity3D;
+using Framework.InteractionAutomation.Runner;
+using Module.InteractionAutomation.Timing.Unity3D;
 using UnityEngine;
 
 public sealed class InteractionRunnerProbe :

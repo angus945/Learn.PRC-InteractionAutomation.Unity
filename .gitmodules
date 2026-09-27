@@ -27,3 +27,23 @@
 	path = Assets/CraftyRacoon/Workspace.Verification
 	url = https://github.com/crafty-racoon/Workspace.Verification.git
 	update = checkout
+
+[submodule "Framework.InteractionAutomation.Runner"]
+	path = Assets/CraftyRacoon/Framework.InteractionAutomation.Runner
+	url = https://github.com/crafty-racoon/Framework.InteractionAutomation.Runner.git
+	update = checkout
+
+[submodule "Framework.InteractionAutomation.Monkey"]
+	path = Assets/CraftyRacoon/Framework.InteractionAutomation.Monkey
+	url = https://github.com/crafty-racoon/Framework.InteractionAutomation.Monkey.git
+	update = checkout
+
+[submodule "Framework.InteractionAutomation.Runner.Unity3D"]
+	path = Assets/CraftyRacoon/Framework.InteractionAutomation.Runner.Unity3D
+	url = https://github.com/crafty-racoon/Framework.InteractionAutomation.Runner.Unity3D.git
+	update = checkout
+
+[submodule "Framework.InteractionAutomation.Monkey.Unity3D"]
+	path = Assets/CraftyRacoon/Framework.InteractionAutomation.Monkey.Unity3D
+	url = https://github.com/crafty-racoon/Framework.InteractionAutomation.Monkey.Unity3D.git
+	update = checkout
