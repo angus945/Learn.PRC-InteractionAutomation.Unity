@@ -152,7 +152,7 @@ Runtime code does not resolve handlers directly.
 
 Drag runtime acceptance: **PASS**
 
-Full pointer execution runtime acceptance: **PENDING**
+Full pointer execution runtime acceptance: **PASS**
 
 Expected final probe result:
 
@@ -172,10 +172,22 @@ Workspace.InteractionAutomation.Unity3D
 bfce40cd0ac7b99020eecf6320d6f91493470f3e
 ```
 
-## Next after acceptance
+# Phase 11 — Observation / Verification
+
+Status: **WORKSPACE INSTALLED — integration not started**
+
+The full `Workspace.Verification` repository is installed as one project submodule:
 
 ```text
-Phase 11 — Observation / Verification
+Assets/CraftyRacoon/Workspace.Verification
 ```
 
-Execution should remain separate from product-specific correctness assertions.
+Pinned revision:
+
+```text
+c85081e463233f92b014b19faec92b8d66b1e3a8
+```
+
+No Verification module is wired into InteractionAutomation or AutoLab yet. The workspace is present as a capability source; P11 will reference only the modules required by an actual observation/verification slice.
+
+Execution remains separate from product-specific correctness assertions.
