@@ -174,7 +174,7 @@ bfce40cd0ac7b99020eecf6320d6f91493470f3e
 
 # Phase 11 — Observation / Verification
 
-Status: **WORKSPACE INSTALLED — integration not started**
+Status: **P11.1 IMPLEMENTED — runtime acceptance pending**
 
 The full `Workspace.Verification` repository is installed as one project submodule:
 
@@ -188,6 +188,37 @@ Pinned revision:
 c85081e463233f92b014b19faec92b8d66b1e3a8
 ```
 
-No Verification module is wired into InteractionAutomation or AutoLab yet. The workspace is present as a capability source; P11 will reference only the modules required by an actual observation/verification slice.
+P11.1 uses only `Module.Verification.Oracle`.
+
+First vertical slice:
+
+```text
+PointerDragRequest
+↓
+InteractionRunner
+↓
+Unity EventSystem behavior
+↓
+DragSourceProbe + DropZoneProbe
+↓
+immutable DragObservation
+↓
+OracleSet<DragObservation>
+    ├─ DragLifecycleOracle
+    └─ DropObservedOracle
+↓
+EvaluationReport
+```
+
+The interaction runner does not reference Verification. The probes collect product/UI behavior; `DragObservation` snapshots those observations; Oracle alone owns the pass/fail judgment.
+
+`SystemFact`, `SystemFact.Observability`, `Diagnostics`, `Invariant`, `TraceBuffer`, `StateSnapshot`, `Evidence`, and `RuntimeControl` remain installed but unused in this slice.
+
+Expected P11.1 Drag output:
+
+```text
+POINTER DRAG PASS
+Observation captured separately from Oracle judgment.
+```
 
 Execution remains separate from product-specific correctness assertions.

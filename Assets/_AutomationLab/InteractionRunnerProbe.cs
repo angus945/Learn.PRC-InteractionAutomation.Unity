@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text;
 using System.Threading.Tasks;
 using Module.InteractionAutomation.Availability;
 using Module.InteractionAutomation.PhysicalInput;
@@ -7,6 +8,7 @@ using Module.InteractionAutomation.PhysicalInput.Unity3D;
 using Module.InteractionAutomation.Runner;
 using Module.InteractionAutomation.Runner.Unity3D;
 using Module.InteractionAutomation.Targets;
+using Module.Verification.Oracle;
 using UnityEngine;
 
 public sealed class InteractionRunnerProbe :
@@ -141,21 +143,30 @@ public sealed class InteractionRunnerProbe :
 
         yield return null;
 
-        if (dragSourceProbe.BeginDragCount != 1 ||
-            dragSourceProbe.DragCount < 1 ||
-            dragSourceProbe.EndDragCount != 1 ||
-            dropZoneProbe.DropCount != 1)
+        var dragObservation =
+            new DragObservation(
+                dragSourceProbe.BeginDragCount,
+                dragSourceProbe.DragCount,
+                dragSourceProbe.EndDragCount,
+                dropZoneProbe.DropCount);
+
+        EvaluationReport dragVerification =
+            DragVerificationProfile
+                .Create()
+                .Evaluate(
+                    "button.confirm->toggle.music",
+                    dragObservation);
+
+        if (ReportVerificationFailure(
+                "POINTER DRAG",
+                dragVerification))
         {
-            Debug.LogError(
-                "POINTER DRAG FAILED\n" +
-                $"BeginDrag={dragSourceProbe.BeginDragCount}\n" +
-                $"Drag={dragSourceProbe.DragCount}\n" +
-                $"EndDrag={dragSourceProbe.EndDragCount}\n" +
-                $"Drop={dropZoneProbe.DropCount}");
             yield break;
         }
 
-        Debug.Log("POINTER DRAG PASS");
+        Debug.Log(
+            "POINTER DRAG PASS\n" +
+            "Observation captured separately from Oracle judgment.");
 
         pointerScrollProbe.ResetObservation();
 
@@ -334,6 +345,52 @@ public sealed class InteractionRunnerProbe :
         Debug.LogException(
             task.Exception?
                 .GetBaseException());
+
+        return true;
+    }
+
+    private static bool ReportVerificationFailure(
+        string label,
+        EvaluationReport report)
+    {
+        if (report.Verdict == TestVerdict.Passed)
+            return false;
+
+        var message =
+            new StringBuilder();
+
+        message
+            .Append(label)
+            .Append(" VERIFICATION FAILED\n")
+            .Append("Verdict=")
+            .Append(report.Verdict)
+            .Append('\n');
+
+        foreach (OracleResult result in report.Results)
+        {
+            message
+                .Append(result.Code)
+                .Append(": ")
+                .Append(result.Verdict)
+                .Append(" — ")
+                .Append(result.Detail)
+                .Append('\n');
+        }
+
+        foreach (EvaluationError error in report.Errors)
+        {
+            message
+                .Append("OracleError ")
+                .Append(error.OracleId)
+                .Append(": ")
+                .Append(error.ExceptionType)
+                .Append(" — ")
+                .Append(error.Message)
+                .Append('\n');
+        }
+
+        Debug.LogError(
+            message.ToString());
 
         return true;
     }
