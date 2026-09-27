@@ -182,7 +182,7 @@ Unavailable targets are rejected before any physical input is submitted.
 
 # Phase 10 — New Action Shapes
 
-Status: **IMPLEMENTED — Unity runtime validation required**
+Status: **DRAG ACCEPTED — continue Keyboard / TextInput**
 
 Add only actions that introduce a genuinely different interaction shape.
 
@@ -237,6 +237,8 @@ After PointerDown succeeds, cancellation or failure during the held portion stil
 The first Unity runtime attempt queued Down → Move-held → Up before EventSystem had an intermediate processing opportunity. Evidence: `BeginDrag=0` and the destination Toggle received a normal click instead. Phase 10 therefore introduced `IHostInputProcessingBoundary`; Unity supplies `UnityFrameInputProcessingBoundary` from `Module.InteractionAutomation.Runner.Unity3D`.
 
 This does not change `IPhysicalInputDriver` completion semantics. The boundary only provides a host processing opportunity between sustained gesture phases.
+
+The rerun after introducing `IHostInputProcessingBoundary` passed in Unity. Drag runtime acceptance is therefore complete.
 
 The AutoLab runtime probe uses `button.confirm` as the source and `toggle.music` as the destination. The Button keeps its ButtonTargetKind and gains PointerDrag capability; Kind does not dispatch the action.
 
@@ -296,6 +298,6 @@ b9d0f99ef079180c376dccd9d89be003bf8c8267
 ```text
 Phases 1–9  COMPLETE
 P10 boundary refactor COMPLETE
-Phase 10 Drag IMPLEMENTED
-Unity runtime acceptance PENDING — rerun after processing-boundary fix
+Phase 10 Drag ACCEPTED
+Phase 10 Keyboard / TextInput START HERE
 ```
