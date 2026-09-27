@@ -1,19 +1,15 @@
+using Module.InteractionAutomation.Observation.Unity3D;
+
 public sealed class DragObservation
 {
     public DragObservation(
-        int beginDragCount,
-        int dragCount,
-        int endDragCount,
-        int dropCount)
+        UnityPointerDragObservation drag,
+        UnityPointerDropObservation drop)
     {
-        BeginDragCount = beginDragCount;
-        DragCount = dragCount;
-        EndDragCount = endDragCount;
-        DropCount = dropCount;
+        Drag = drag;
+        Drop = drop;
     }
 
-    public int BeginDragCount { get; }
-    public int DragCount { get; }
-    public int EndDragCount { get; }
-    public int DropCount { get; }
+    public UnityPointerDragObservation Drag { get; }
+    public UnityPointerDropObservation Drop { get; }
 }

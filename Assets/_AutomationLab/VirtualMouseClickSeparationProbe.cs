@@ -6,6 +6,7 @@ using Module.InteractionAutomation.Coordinates;
 using Module.InteractionAutomation.Coordinates.Unity3D;
 using Module.InteractionAutomation.PhysicalInput;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
+using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.Targets;
 using Module.InteractionAutomation.Targets.Unity3D;
 using UnityEngine;
@@ -24,7 +25,7 @@ public sealed class VirtualMouseClickSeparationProbe :
     private ButtonClickCounter clickCounter;
 
     [SerializeField]
-    private PointerHoverProbe hoverProbe;
+    private UnityPointerHoverObserver hoverProbe;
 
     private UnityPhysicalInputDriver input;
 
@@ -471,7 +472,7 @@ public sealed class VirtualMouseClickSeparationProbe :
         if (hoverProbe == null)
         {
             Debug.LogError(
-                "PointerHoverProbe is not assigned.");
+                "UnityPointerHoverObserver is not assigned.");
 
             return false;
         }

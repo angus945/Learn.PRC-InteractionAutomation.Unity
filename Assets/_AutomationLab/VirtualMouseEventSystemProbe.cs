@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Module.InteractionAutomation.Coordinates;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
+using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.Targets;
 using Module.InteractionAutomation.Targets.Unity3D;
 using UnityEngine;
@@ -19,7 +20,7 @@ public sealed class VirtualMouseEventSystemProbe :
     private const float SeparationObservationSeconds = 3f;
 
     [SerializeField]
-    private PointerHoverProbe confirmButtonHoverProbe;
+    private UnityPointerHoverObserver confirmButtonHoverProbe;
 
     private UnityPhysicalInputDriver input;
 
@@ -219,7 +220,7 @@ public sealed class VirtualMouseEventSystemProbe :
         if (confirmButtonHoverProbe == null)
         {
             Debug.LogError(
-                "ConfirmButton PointerHoverProbe is not assigned.");
+                "ConfirmButton UnityPointerHoverObserver is not assigned.");
 
             return false;
         }

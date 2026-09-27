@@ -10,14 +10,14 @@ public sealed class DragLifecycleOracle :
         DragObservation context)
     {
         bool passed =
-            context.BeginDragCount == 1 &&
-            context.DragCount >= 1 &&
-            context.EndDragCount == 1;
+            context.Drag.BeginDragCount == 1 &&
+            context.Drag.DragCount >= 1 &&
+            context.Drag.EndDragCount == 1;
 
         string detail =
-            $"BeginDrag={context.BeginDragCount}, " +
-            $"Drag={context.DragCount}, " +
-            $"EndDrag={context.EndDragCount}";
+            $"BeginDrag={context.Drag.BeginDragCount}, " +
+            $"Drag={context.Drag.DragCount}, " +
+            $"EndDrag={context.Drag.EndDragCount}";
 
         return new OracleResult(
             passed

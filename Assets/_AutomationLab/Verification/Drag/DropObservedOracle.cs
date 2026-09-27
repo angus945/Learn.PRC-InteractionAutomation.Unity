@@ -10,13 +10,13 @@ public sealed class DropObservedOracle :
         DragObservation context)
     {
         bool passed =
-            context.DropCount == 1;
+            context.Drop.DropCount == 1;
 
         return new OracleResult(
             passed
                 ? TestVerdict.Passed
                 : TestVerdict.Failed,
             "pointer.drag.drop-observed",
-            $"Drop={context.DropCount}");
+            $"Drop={context.Drop.DropCount}");
     }
 }

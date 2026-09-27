@@ -169,12 +169,12 @@ Workspace.InteractionAutomation
 7213f271aca0754a84d0055f073190e0f17dcd09
 
 Workspace.InteractionAutomation.Unity3D
-bfce40cd0ac7b99020eecf6320d6f91493470f3e
+3887c81350b8889220b89d0f0b896301751668a6
 ```
 
 # Phase 11 — Observation / Verification
 
-Status: **P11.1 IMPLEMENTED — runtime acceptance pending**
+Status: **P11.1 ACCEPTED — Unity observation adapters extracted**
 
 The full `Workspace.Verification` repository is installed as one project submodule:
 
@@ -199,9 +199,11 @@ InteractionRunner
 ↓
 Unity EventSystem behavior
 ↓
-DragSourceProbe + DropZoneProbe
+UnityPointerDragObserver + UnityPointerDropObserver
 ↓
-immutable DragObservation
+immutable Unity host observations
+↓
+project-owned DragObservation
 ↓
 OracleSet<DragObservation>
     ├─ DragLifecycleOracle
@@ -222,3 +224,22 @@ Observation captured separately from Oracle judgment.
 ```
 
 Execution remains separate from product-specific correctness assertions.
+
+
+## Unity observation boundary
+
+Reusable EventSystem observation moved to `Workspace.InteractionAutomation.Unity3D`:
+
+```text
+Module.InteractionAutomation.Observation.Unity3D
+├─ UnityPointerClickObserver
+├─ UnityPointerDragObserver
+├─ UnityPointerDropObserver
+├─ UnityPointerHoverObserver
+├─ UnityPointerPressObserver
+└─ UnityPointerScrollObserver
+```
+
+Each observer captures an immutable `UnityPointer*Observation`. These adapters report what Unity observed and contain no Oracle, PASS/FAIL, product expectation, or logging policy.
+
+AutoLab still owns product probes, scenario observations, and Oracle expectations.

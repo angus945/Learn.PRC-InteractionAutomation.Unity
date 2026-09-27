@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Module.InteractionAutomation.Availability;
 using Module.InteractionAutomation.PhysicalInput;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
+using Module.InteractionAutomation.Observation.Unity3D;
 using Module.InteractionAutomation.Runner;
 using Module.InteractionAutomation.Runner.Unity3D;
 using Module.InteractionAutomation.Targets;
@@ -24,22 +25,22 @@ public sealed class InteractionRunnerProbe :
     private ToggleStateProbe toggleStateProbe;
 
     [SerializeField]
-    private DragSourceProbe dragSourceProbe;
+    private UnityPointerDragObserver dragSourceProbe;
 
     [SerializeField]
-    private DropZoneProbe dropZoneProbe;
+    private UnityPointerDropObserver dropZoneProbe;
 
     [SerializeField]
-    private PointerHoverProbe pointerHoverProbe;
+    private UnityPointerHoverObserver pointerHoverProbe;
 
     [SerializeField]
-    private PointerClickCountProbe pointerClickCountProbe;
+    private UnityPointerClickObserver pointerClickCountProbe;
 
     [SerializeField]
-    private PointerHoldProbe pointerHoldProbe;
+    private UnityPointerPressObserver pointerHoldProbe;
 
     [SerializeField]
-    private PointerScrollProbe pointerScrollProbe;
+    private UnityPointerScrollObserver pointerScrollProbe;
 
     [SerializeField]
     private UnityFrameInputProcessingBoundary inputProcessingBoundary;
@@ -145,10 +146,8 @@ public sealed class InteractionRunnerProbe :
 
         var dragObservation =
             new DragObservation(
-                dragSourceProbe.BeginDragCount,
-                dragSourceProbe.DragCount,
-                dragSourceProbe.EndDragCount,
-                dropZoneProbe.DropCount);
+                dragSourceProbe.Capture(),
+                dropZoneProbe.Capture());
 
         EvaluationReport dragVerification =
             DragVerificationProfile
@@ -287,21 +286,21 @@ public sealed class InteractionRunnerProbe :
 
         if (pointerHoldProbe.DownCount != 1 ||
             pointerHoldProbe.UpCount != 1 ||
-            pointerHoldProbe.HeldFrameCount < 1 ||
+            pointerHoldProbe.PressedFrameCount < 1 ||
             pointerHoldProbe.IsPressed)
         {
             Debug.LogError(
                 "POINTER HOLD FAILED\n" +
                 $"Down={pointerHoldProbe.DownCount}\n" +
                 $"Up={pointerHoldProbe.UpCount}\n" +
-                $"HeldFrames={pointerHoldProbe.HeldFrameCount}\n" +
+                $"HeldFrames={pointerHoldProbe.PressedFrameCount}\n" +
                 $"IsPressed={pointerHoldProbe.IsPressed}");
             yield break;
         }
 
         Debug.Log(
             "POINTER HOLD PASS\n" +
-            $"HeldFrames={pointerHoldProbe.HeldFrameCount}");
+            $"HeldFrames={pointerHoldProbe.PressedFrameCount}");
 
         Debug.Log(
             "PHASE 10 POINTER EXECUTION PASS\n" +

@@ -283,7 +283,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68ae36cb557e4c743ba7ec672fe78658, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PointerHoverProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerHoverObserver
 --- !u!114 &11310483
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1457,7 +1457,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3bf09c83598b43f2827fbde93c16f901, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::DragSourceProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerDragObserver
 --- !u!114 &1900000102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1469,7 +1469,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd108805c70c4d37aa5cf64a692e4012, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::DropZoneProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerDropObserver
 --- !u!114 &1900000103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1493,7 +1493,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 31c09d6e412c49f1a66552030c1ad401, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::PointerClickCountProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerClickObserver
 --- !u!114 &1900000105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1505,7 +1505,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 462f01df26c44cb099809099e8ca2502, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::PointerHoldProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerPressObserver
 --- !u!114 &1900000106
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1517,7 +1517,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7216c8c75457496eb20d0a4a5c63bf03, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::PointerScrollProbe
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerScrollObserver
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
