@@ -20,6 +20,8 @@ InteractionTargetSnapshot
 Availability Evaluation
         ↓
 InteractionRunner
+        ↓ delegates
+Concrete Interaction Use Case
         ↓
 IPhysicalInputDriver
         ↓
@@ -119,21 +121,22 @@ The registry currently uses CLR `Type` identity only. Stable serialized/cross-pr
 
 Status: **Complete**
 
-Reusable host-neutral workflow:
+Reusable host-neutral workflow was introduced.
+
+The Phase 10 preparation refactor clarified the boundary:
 
 ```text
-Capture
-↓
-Resolve by InteractionTargetId
-↓
-Validate capability
-↓
-derive interaction point
-↓
-submit physical input
+InteractionRunner
+= thin facade
+
+PointerClickInteraction
+= concrete PointerClick use case
+
+InteractionTargetResolver
+= shared uniqueness resolution over one captured target set
 ```
 
-`InteractionRunner` does not know Unity, EventSystem, Button, Toggle, Renderer, Collider, or specific target kinds.
+Action-specific sequencing must not accumulate inside `InteractionRunner`.
 
 ## Phase 9 — Target Availability
 
@@ -148,7 +151,7 @@ IInteractionAvailabilityEvaluator
         ↓
 InteractionAvailability
         ↓
-InteractionRunner
+Concrete Interaction Use Case
 ```
 
 Current reasons:
@@ -203,6 +206,10 @@ one or more Move operations while held
 PointerUp
 ```
 
+Drag should be introduced as a concrete interaction use case, not as more orchestration inside `InteractionRunner`.
+
+Do not create a generic action bus, handler registry, or action DSL before multiple implemented actions demonstrate a stable abstraction.
+
 Do not create a separate learning milestone for every input enum value.
 
 ## Phase 11 — Observation / Verification
@@ -212,28 +219,28 @@ Status: Pending
 Separate execution from correctness:
 
 ```text
-Runner → Action
-Observer / Verification → Result
+Runner / Interaction Use Case → Action
+Observer / Verification       → Result
 ```
 
 ## Phase 12 — Monkey / Exploration
 
 Status: Pending
 
-Monkey is a selection policy over existing target, capability, availability, and runner primitives.
+Monkey is a selection policy over existing target, capability, availability, and interaction-use-case primitives.
 
 ## Phase 13 — Remote / OS Automation
 
 Status: Pending
 
-Only after the local Runner model is stable:
+Only after the local interaction model is stable:
 
 ```text
 External process
 ↓
 transport
 ↓
-Runner API
+application interaction API
 ↓
 Target / Physical Input
 ```
@@ -246,7 +253,7 @@ This is where `OSSpace`, serialization, and stable cross-process kind identity m
 
 ```text
 Workspace.InteractionAutomation
-fff18e83df0922daa3d1d5b5e6c417588e490b99
+0e7209dadbd34839f964c53e2373f7637bd501a5
 
 Workspace.InteractionAutomation.Unity3D
 1396d829c6a1f741a3cca7cf3b22f1468aade382
@@ -256,5 +263,6 @@ Workspace.InteractionAutomation.Unity3D
 
 ```text
 Phases 1–9  COMPLETE
-Phase 10      START HERE
+P10 boundary refactor COMPLETE
+Phase 10 Drag START HERE
 ```
