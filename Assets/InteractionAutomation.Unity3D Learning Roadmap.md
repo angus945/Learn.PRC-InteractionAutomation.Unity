@@ -166,7 +166,7 @@ Normal Unity Input System / EventSystem route observed.
 
 ```text
 Workspace.InteractionAutomation
-7213f271aca0754a84d0055f073190e0f17dcd09
+03653c7be0adde8c87771f075d8e8ee9bb8b8344
 
 Workspace.InteractionAutomation.Unity3D
 599f676111f59388d2375adc3644a81f524ee138
@@ -174,7 +174,7 @@ Workspace.InteractionAutomation.Unity3D
 
 # Phase 11 — Observation / Verification
 
-Status: **P11.3 IMPLEMENTED — runtime acceptance pending**
+Status: **COMPLETE**
 
 Installed verification workspace:
 
@@ -286,4 +286,69 @@ PHASE 11 OBSERVATION / VERIFICATION PASS
 Execution / observation / host verification / AutoLab product verification are separated.
 ```
 
-After runtime acceptance, Phase 11 is complete and the next phase is deterministic Monkey execution.
+Runtime acceptance: **PASS**
+
+# Phase 12 — Deterministic Monkey
+
+Status: **P12.1 IMPLEMENTED — runtime acceptance pending**
+
+P12.1 introduces the host-neutral:
+
+```text
+Module.InteractionAutomation.Monkey
+```
+
+Selection:
+
+```text
+current target snapshots
+→ SnapshotInteractionAvailabilityEvaluator
+→ supported capability/action pairs
+→ stable sort by TargetId + ActionId
+→ frozen SplitMix64 seeded selection
+→ PointerMonkeyStep
+```
+
+Supported actions:
+
+```text
+PointerClick
+PointerDoubleClick
+Scroll
+PointerHold
+PointerHover
+```
+
+`PointerDrag` is intentionally excluded until source/destination selection is introduced.
+
+Execution remains on the formal path:
+
+```text
+PointerMonkeyStep
+→ typed Pointer*Request
+→ InteractionRunner
+→ concrete interaction handler
+→ UnityPhysicalInputDriver
+→ host processing boundary
+```
+
+The monkey never calls physical input directly and does not dispatch by capability enum.
+
+AutoLab default probe:
+
+```text
+AutoLabSeededPointerMonkeyProbe
+Seed = 12345
+Iterations = 25
+```
+
+The previous P11 `InteractionRunnerProbe` remains in the scene but is disabled while the Monkey probe owns the virtual input run.
+
+Expected runtime marker:
+
+```text
+P12.1 SEEDED POINTER MONKEY PASS
+Seed=12345
+Iterations=25
+All selected actions executed through InteractionRunner.
+```
