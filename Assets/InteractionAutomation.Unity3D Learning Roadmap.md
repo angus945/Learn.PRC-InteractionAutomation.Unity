@@ -166,10 +166,10 @@ Normal Unity Input System / EventSystem route observed.
 
 ```text
 Workspace.InteractionAutomation
-03653c7be0adde8c87771f075d8e8ee9bb8b8344
+904baba3a489b5a28051ff27640a0c5d0fde3898
 
 Workspace.InteractionAutomation.Unity3D
-599f676111f59388d2375adc3644a81f524ee138
+a836d44be53ed582c183b5ca9e5fc75382f8dbce
 ```
 
 # Phase 11 — Observation / Verification
@@ -187,7 +187,7 @@ Unity integration revision:
 
 ```text
 Workspace.InteractionAutomation.Unity3D
-599f676111f59388d2375adc3644a81f524ee138
+a836d44be53ed582c183b5ca9e5fc75382f8dbce
 ```
 
 ## Boundaries
@@ -296,7 +296,7 @@ Core revision:
 
 ```text
 Workspace.InteractionAutomation
-b60b91543d37373a7658eb0d1d18a41ba5f891f8
+904baba3a489b5a28051ff27640a0c5d0fde3898
 ```
 
 Unity integration revision:
