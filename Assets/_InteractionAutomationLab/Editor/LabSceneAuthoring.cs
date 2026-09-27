@@ -145,11 +145,15 @@ namespace Project.InteractionAutomationLab.Editor
                 "Manual Explore\nReady.\n\nNo target in this panel.\n\nScope exclusions:\n- Occlusion\n- Camera Stack\n- Scene transitions", 18, TextAnchor.UpperLeft);
             Anchor(diagnostics.rectTransform, new Vector2(0.06f, 0.08f), new Vector2(0.94f, 0.70f), Vector2.zero, Vector2.zero);
             Button runAcceptance = CreateControlButton(labControlPanel.transform, "Run Scripted Acceptance");
-            Anchor(runAcceptance.GetComponent<RectTransform>(), new Vector2(0.06f, 0.84f), new Vector2(0.94f, 0.91f), Vector2.zero, Vector2.zero);
+            Anchor(runAcceptance.GetComponent<RectTransform>(), new Vector2(0.06f, 0.87f), new Vector2(0.94f, 0.93f), Vector2.zero, Vector2.zero);
+            Button runMonkey = CreateControlButton(labControlPanel.transform, "Run Frozen Monkey Campaign");
+            Anchor(runMonkey.GetComponent<RectTransform>(), new Vector2(0.06f, 0.79f), new Vector2(0.94f, 0.85f), Vector2.zero, Vector2.zero);
             Button stop = CreateControlButton(labControlPanel.transform, "Stop");
-            Anchor(stop.GetComponent<RectTransform>(), new Vector2(0.06f, 0.75f), new Vector2(0.47f, 0.82f), Vector2.zero, Vector2.zero);
+            Anchor(stop.GetComponent<RectTransform>(), new Vector2(0.06f, 0.71f), new Vector2(0.47f, 0.77f), Vector2.zero, Vector2.zero);
             Button reset = CreateControlButton(labControlPanel.transform, "Reset");
-            Anchor(reset.GetComponent<RectTransform>(), new Vector2(0.53f, 0.75f), new Vector2(0.94f, 0.82f), Vector2.zero, Vector2.zero);
+            Anchor(reset.GetComponent<RectTransform>(), new Vector2(0.53f, 0.71f), new Vector2(0.94f, 0.77f), Vector2.zero, Vector2.zero);
+            Button export = CreateControlButton(labControlPanel.transform, "Export Last Result");
+            Anchor(export.GetComponent<RectTransform>(), new Vector2(0.06f, 0.63f), new Vector2(0.94f, 0.69f), Vector2.zero, Vector2.zero);
             GameObject pointerPresentation = CreatePanel("PointerPresentation", canvasObject.transform, Color.clear);
             Image pointerImage = pointerPresentation.GetComponent<Image>();
             pointerImage.raycastTarget = false;
@@ -167,8 +171,10 @@ namespace Project.InteractionAutomationLab.Editor
             UnityEventTools.AddPersistentListener(music.onValueChanged, controller.MusicChanged);
             UnityEventTools.AddPersistentListener(sfx.onValueChanged, controller.SfxChanged);
             UnityEventTools.AddPersistentListener(runAcceptance.onClick, session.RunScriptedAcceptance);
+            UnityEventTools.AddPersistentListener(runMonkey.onClick, session.RunFrozenMonkeyCampaign);
             UnityEventTools.AddPersistentListener(stop.onClick, session.Stop);
             UnityEventTools.AddPersistentListener(reset.onClick, session.ResetLab);
+            UnityEventTools.AddPersistentListener(export.onClick, session.ExportLastResult);
 
             settingsPage.SetActive(false);
             EditorSceneManager.MarkSceneDirty(scene);

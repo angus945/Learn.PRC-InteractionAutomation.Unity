@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Module.InteractionAutomation.PhysicalInput.Unity3D;
 using Module.InteractionAutomation.Timing.Unity3D;
 using Project.InteractionAutomationLab.Automation;
+using Project.InteractionAutomationLab.Diagnostics;
 using Project.InteractionAutomationLab.Presentation;
+using Project.InteractionAutomationLab.Verification;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -36,6 +38,8 @@ namespace Project.InteractionAutomationLab.Scenarios
 
         public LabSessionState State { get; private set; }
         public LabAcceptanceReport LastAcceptanceReport { get; private set; }
+        public LabCampaignReport LastCampaignReport { get; private set; }
+        public string LastExportPath { get; private set; }
 
         public async void RunScriptedAcceptance()
         {
@@ -74,6 +78,43 @@ namespace Project.InteractionAutomationLab.Scenarios
             }
         }
 
+        public async void RunFrozenMonkeyCampaign()
+        {
+            try
+            {
+                await RunFrozenMonkeyCampaignAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                UpdateDiagnostics("Monkey campaign cancelled after cleanup.");
+            }
+            catch (Exception exception)
+            {
+                UpdateDiagnostics("Monkey campaign infrastructure failure:\n" + exception.Message);
+                Debug.LogException(exception);
+            }
+        }
+
+        public async Task<LabCampaignReport> RunFrozenMonkeyCampaignAsync()
+        {
+            EnsureCanStart();
+            State = LabSessionState.Running;
+            runCancellation = new CancellationTokenSource();
+            CancellationToken cancellationToken = runCancellation.Token;
+            activeRun = RunCampaignCoreAsync(cancellationToken);
+            try
+            {
+                await activeRun;
+                return LastCampaignReport;
+            }
+            finally
+            {
+                DisposeRunResources();
+                activeRun = null;
+                State = LabSessionState.Idle;
+            }
+        }
+
         public async void Stop()
         {
             if (State != LabSessionState.Running || runCancellation == null) return;
@@ -94,7 +135,18 @@ namespace Project.InteractionAutomationLab.Scenarios
             if (State != LabSessionState.Idle) throw new InvalidOperationException("Reset is available only while the Lab is Idle.");
             product.ResetProduct();
             LastAcceptanceReport = null;
+            LastCampaignReport = null;
+            LastExportPath = string.Empty;
             UpdateDiagnostics("Manual Explore\nReady. Last result cleared.");
+        }
+
+        public void ExportLastResult()
+        {
+            if (State != LabSessionState.Idle) throw new InvalidOperationException("Export is available only while the Lab is Idle.");
+            if (LastCampaignReport != null) LastExportPath = LabEvidenceExporter.Export(LastCampaignReport);
+            else if (LastAcceptanceReport != null) LastExportPath = LabEvidenceExporter.Export(LastAcceptanceReport);
+            else throw new InvalidOperationException("There is no completed result to export.");
+            UpdateDiagnostics("Evidence exported:\n" + LastExportPath);
         }
 
         private async Task RunAcceptanceCoreAsync(CancellationToken cancellationToken)
@@ -111,6 +163,22 @@ namespace Project.InteractionAutomationLab.Scenarios
             LastAcceptanceReport = await suite.RunAsync(cancellationToken);
             string status = LastAcceptanceReport.Passed ? "PASS" : "FAIL";
             UpdateDiagnostics("Scripted Acceptance " + status + "\n" + FormatScenarios(LastAcceptanceReport));
+        }
+
+        private async Task RunCampaignCoreAsync(CancellationToken cancellationToken)
+        {
+            ConfigureSessionInputFocus();
+            physicalInput = new UnityPhysicalInputDriver();
+            InputSystem.EnableDevice(physicalInput.Mouse);
+            EnableUiActions();
+            countingInput = new CountingPhysicalInputDriver(physicalInput);
+            LabTargetBindingSource bindings = new LabTargetBindingSource(subjectRoot, LabBindingScope.FrozenMonkeyScope);
+            LabMonkeyCampaignSuite suite = new LabMonkeyCampaignSuite(product, countingInput, physicalInput, inputProcessingBoundary, bindings);
+            UpdateDiagnostics("Running Frozen Monkey: 4 presets x 3 seeds x 64 steps, plus deterministic replays...");
+            await inputProcessingBoundary.WaitAsync(cancellationToken);
+            LastCampaignReport = await suite.RunAsync(cancellationToken);
+            string status = LastCampaignReport.Passed ? "PASS" : "FAIL";
+            UpdateDiagnostics("Frozen Monkey " + status + "\n" + FormatCampaign(LastCampaignReport));
         }
 
         private void EnsureCanStart()
@@ -167,6 +235,17 @@ namespace Project.InteractionAutomationLab.Scenarios
             {
                 value += scenario.id + " " + scenario.status + " input=" + scenario.physicalSubmissionDelta + "\n";
                 if (scenario.status != LabScenarioStatus.Passed) value += scenario.detail + "\n";
+            }
+            return value;
+        }
+
+        private static string FormatCampaign(LabCampaignReport report)
+        {
+            string value = "";
+            foreach (LabMonkeyRunSummary run in report.runs)
+            {
+                value += run.preset + " seed=" + run.seed + " " + (run.Passed ? "PASS" : "FAIL") +
+                    " coverage=" + run.coveredCount + "/" + run.actualEligibleCount + " steps=" + run.completedIterations + "/" + run.requestedIterations + "\n";
             }
             return value;
         }
