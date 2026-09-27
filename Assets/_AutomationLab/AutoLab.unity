@@ -310,6 +310,7 @@ GameObject:
   - component: {fileID: 36762818}
   - component: {fileID: 1900000102}
   - component: {fileID: 1900000106}
+  - component: {fileID: 1900000110}
   m_Layer: 5
   m_Name: Toggle
   m_TagString: Untagged
@@ -794,7 +795,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Module.InteractionAutomation.Targets.Unity3D::Module.InteractionAutomation.Targets.Unity3D.InteractionTargetBinding
   targetId: chest.001
-  capabilities: 1
+  capabilities: 0
 --- !u!1 &1134976232
 GameObject:
   m_ObjectHideFlags: 0
@@ -1480,6 +1481,7 @@ MonoBehaviour:
   interactionCamera: {fileID: 1134976234}
   inputProcessingBoundary: {fileID: 1900000103}
   presentation: {fileID: 1900000108}
+  dragDropObserver: {fileID: 1900000102}
   seed: 12345
   iterationCount: 25
   holdDurationMilliseconds: 200
@@ -1506,6 +1508,18 @@ MonoBehaviour:
   trailCapacity: 24
   trailSampleDistance: 4
   cursorSize: 18
+--- !u!114 &1900000110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36762814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31c09d6e412c49f1a66552030c1ad401, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Module.InteractionAutomation.Observation.Unity3D::Module.InteractionAutomation.Observation.Unity3D.UnityPointerClickObserver
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

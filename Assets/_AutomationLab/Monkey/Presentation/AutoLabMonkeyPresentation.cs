@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Module.InteractionAutomation.Coordinates;
 using Module.InteractionAutomation.Coordinates.Unity3D;
 using Module.InteractionAutomation.Monkey;
+using Module.InteractionAutomation.Monkey.Unity3D;
+using Module.Verification.Oracle;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -49,6 +51,9 @@ public sealed class AutoLabMonkeyPresentation :
     private string currentTarget = "<none>";
     private string status = "Idle";
     private string lastError = string.Empty;
+    private string lastVerification = "<none>";
+    private string coverage = "0 / 0";
+    private string evidence = "<none>";
     private float pulseUntil;
 
     private GUIStyle titleStyle;
@@ -84,6 +89,9 @@ public sealed class AutoLabMonkeyPresentation :
         currentTarget = "<none>";
         status = "Starting";
         lastError = string.Empty;
+        lastVerification = "<none>";
+        coverage = "0 / 0";
+        evidence = "<none>";
         history.Clear();
         trail.Clear();
     }
@@ -93,7 +101,11 @@ public sealed class AutoLabMonkeyPresentation :
     {
         currentIteration = step.Sequence;
         currentAction = step.ActionId;
-        currentTarget = step.TargetId.Value;
+        currentTarget =
+            step.DestinationTargetId.HasValue
+                ? $"{step.TargetId.Value} => " +
+                  $"{step.DestinationTargetId.Value.Value}"
+                : step.TargetId.Value;
         status = "Selected";
         lastError = string.Empty;
     }
@@ -103,20 +115,24 @@ public sealed class AutoLabMonkeyPresentation :
     {
         currentIteration = step.Sequence;
         currentAction = step.ActionId;
-        currentTarget = step.TargetId.Value;
         status = "Executing";
         pulseUntil =
             Time.unscaledTime + 0.2f;
     }
 
     public void CompleteStep(
-        PointerMonkeyStep step)
+        PointerMonkeyStep step,
+        EvaluationReport verification)
     {
-        status = "Completed";
+        status = "Verified";
+        lastVerification =
+            Summarize(
+                verification);
 
         AddHistory(
             $"#{step.Sequence} {step.ActionId} -> " +
-            $"{step.TargetId.Value} PASS");
+            $"{FormatTarget(step)} " +
+            $"{verification.Verdict}");
     }
 
     public void FailSelection(
@@ -139,19 +155,40 @@ public sealed class AutoLabMonkeyPresentation :
     {
         currentIteration = step.Sequence;
         currentAction = step.ActionId;
-        currentTarget = step.TargetId.Value;
+        currentTarget =
+            FormatTarget(step);
         status = "Failed";
         lastError = detail ?? string.Empty;
+        lastVerification = detail ?? string.Empty;
 
         AddHistory(
             $"#{step.Sequence} {step.ActionId} -> " +
-            $"{step.TargetId.Value} FAIL");
+            $"{FormatTarget(step)} FAIL");
     }
 
-    public void CompleteRun()
+    public void UpdateCoverage(
+        PointerMonkeyCoverageSnapshot snapshot)
     {
-        status = "Run Complete";
+        coverage =
+            $"{snapshot.CoveredCount} / " +
+            $"{snapshot.EligibleCount} " +
+            $"({snapshot.Ratio * 100d:0.#}%)";
+    }
+
+    public void CompleteRun(
+        UnityPointerMonkeyRunReport report)
+    {
+        status =
+            report.Passed
+                ? "Run Complete"
+                : $"Run {report.Verdict}";
+
         currentAction = "<complete>";
+
+        evidence =
+            $"entries={report.Evidence.Entries.Count}, " +
+            $"retainedSteps={report.RetainedSteps.Count}, " +
+            $"overwritten={report.OverwrittenStepCount}";
     }
 
     private void Awake()
@@ -350,19 +387,19 @@ public sealed class AutoLabMonkeyPresentation :
             new Rect(
                 pointerPosition.x + 16f,
                 pointerPosition.y + 12f,
-                220f,
-                46f),
+                240f,
+                48f),
             pointerLabel,
             detailStyle);
     }
 
     private void DrawHud()
     {
-        const float width = 380f;
+        const float width = 430f;
         float height =
             lastError.Length > 0
-                ? 330f
-                : 280f;
+                ? 430f
+                : 380f;
 
         GUILayout.BeginArea(
             new Rect(
@@ -373,7 +410,7 @@ public sealed class AutoLabMonkeyPresentation :
             GUI.skin.box);
 
         GUILayout.Label(
-            "Seeded Pointer Monkey",
+            "Deterministic Monkey QA",
             titleStyle);
 
         GUILayout.Space(4f);
@@ -395,6 +432,10 @@ public sealed class AutoLabMonkeyPresentation :
             detailStyle);
 
         GUILayout.Label(
+            $"Coverage: {coverage}",
+            detailStyle);
+
+        GUILayout.Label(
             $"Pointer: " +
             $"{(hasPointerPosition ? pointerPosition.ToString("0.0") : "<unbound>")}",
             detailStyle);
@@ -406,6 +447,14 @@ public sealed class AutoLabMonkeyPresentation :
         GUILayout.Label(
             $"Status: {status}",
             statusStyle);
+
+        GUILayout.Label(
+            $"Verification: {lastVerification}",
+            detailStyle);
+
+        GUILayout.Label(
+            $"Evidence: {evidence}",
+            detailStyle);
 
         if (lastError.Length > 0)
         {
@@ -436,6 +485,45 @@ public sealed class AutoLabMonkeyPresentation :
         }
 
         GUILayout.EndArea();
+    }
+
+    private static string Summarize(
+        EvaluationReport report)
+    {
+        if (report.Results.Count > 0)
+        {
+            OracleResult result =
+                report.Results[
+                    report.Results.Count - 1];
+
+            return
+                $"{report.Verdict}: " +
+                $"{result.Code} — {result.Detail}";
+        }
+
+        if (report.Errors.Count > 0)
+        {
+            EvaluationError error =
+                report.Errors[
+                    report.Errors.Count - 1];
+
+            return
+                $"{report.Verdict}: " +
+                $"{error.OracleId} — {error.Message}";
+        }
+
+        return report.Verdict.ToString();
+    }
+
+    private static string FormatTarget(
+        PointerMonkeyStep step)
+    {
+        if (!step.DestinationTargetId.HasValue)
+            return step.TargetId.Value;
+
+        return
+            $"{step.TargetId.Value} => " +
+            $"{step.DestinationTargetId.Value.Value}";
     }
 
     private void AddHistory(

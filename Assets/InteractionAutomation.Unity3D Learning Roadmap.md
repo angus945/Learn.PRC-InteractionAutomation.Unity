@@ -288,106 +288,201 @@ Execution / observation / host verification / AutoLab product verification are s
 
 Runtime acceptance: **PASS**
 
-# Phase 12 — Deterministic Monkey
+# Phase 12 — Deterministic Monkey QA Runner
 
-Status: **P12.2 IMPLEMENTED — runtime acceptance pending**
+Status: **P12.6 IMPLEMENTED — final runtime acceptance pending**
 
-P12.1 introduces the host-neutral:
+Core revision:
 
 ```text
-Module.InteractionAutomation.Monkey
+Workspace.InteractionAutomation
+b60b91543d37373a7658eb0d1d18a41ba5f891f8
 ```
 
-Selection:
+Unity integration revision:
 
 ```text
-current target snapshots
-→ SnapshotInteractionAvailabilityEvaluator
-→ supported capability/action pairs
-→ stable sort by TargetId + ActionId
+Workspace.InteractionAutomation.Unity3D
+a836d44be53ed582c183b5ca9e5fc75382f8dbce
+```
+
+## P12.1 — deterministic selection / execution
+
+```text
+target snapshots
+→ availability
+→ stable candidate ordering
 → frozen SplitMix64 seeded selection
-→ PointerMonkeyStep
-```
-
-Supported actions:
-
-```text
-PointerClick
-PointerDoubleClick
-Scroll
-PointerHold
-PointerHover
-```
-
-`PointerDrag` is intentionally excluded until source/destination selection is introduced.
-
-Execution remains on the formal path:
-
-```text
-PointerMonkeyStep
 → typed Pointer*Request
 → InteractionRunner
-→ concrete interaction handler
-→ UnityPhysicalInputDriver
-→ host processing boundary
 ```
 
-The monkey never calls physical input directly and does not dispatch by capability enum.
+No direct physical-input execution exists in Monkey.
 
-AutoLab default probe:
+## P12.2 — presentation
+
+AutoLab displays the actual virtual Input System mouse:
 
 ```text
-AutoLabSeededPointerMonkeyProbe
+cursor
+trail
+button DOWN / UP
+seed
+iteration
+action
+target
+status
+recent steps
+```
+
+Presentation pacing remains outside Core Monkey.
+
+## P12.3 — per-step verification
+
+Every selected action now follows:
+
+```text
+reset target-local observer
+→ execute typed request
+→ capture Unity observation
+→ UnityPointerVerificationProfiles
+→ EvaluationReport
+```
+
+Reusable host contracts:
+
+```text
+Click       → exactly one EventSystem click event
+DoubleClick → >= 2 click events and clickCount >= 2
+Drag        → BeginDrag == 1, Drag >= 1, EndDrag == 1
+Scroll      → one scroll event
+Hold        → Down == 1, Up == 1, pressed >= 1 frame, released
+Hover       → virtual pointer is currently hovered
+```
+
+Any non-Passed verdict stops the run.
+
+AutoLab adds one project-specific Drag expectation:
+
+```text
+button.confirm → toggle.music
+→ DropCount == 1
+```
+
+## P12.4 — evidence / trace
+
+`Module.InteractionAutomation.Monkey.Unity3D` records immutable step results through:
+
+```text
+TraceBuffer<UnityPointerMonkeyStepResult>
++
+EvidenceBuilder
+```
+
+Each step retains:
+
+```text
+Seed
+Sequence
+ActionId
+TargetId
+DestinationTargetId
+Oracle EvaluationReport
+Coverage snapshot
+ReproductionKey
+```
+
+Failure reproduction format:
+
+```text
+seed=<seed>;iteration=<n>;action=<action>;target=<id>;destination=<id>
+```
+
+Evidence is bounded and in-memory. `EvidenceBundle` stores references and metadata rather than duplicating Oracle payloads.
+
+## P12.5 — deterministic Drag
+
+Drag selection is enabled only through:
+
+```text
+IPointerMonkeyDragDestinationPolicy
+```
+
+Core does not assume all targets are valid drop destinations.
+
+AutoLab policy:
+
+```text
+source      = button.confirm
+destination = toggle.music
+```
+
+The resulting execution is still a typed:
+
+```text
+PointerDragRequest(source, destination)
+```
+
+The 3D `chest.001` target remains discoverable for Renderer geometry verification but no longer advertises `PointerClick`, because the scene does not currently provide a PhysicsRaycaster/EventSystem click route for it.
+
+## P12.6 — coverage-first policy
+
+Coverage identity:
+
+```text
+single-target:
+ActionId + TargetId
+
+drag:
+ActionId + SourceId + DestinationId
+```
+
+Selection rule:
+
+```text
+eligible pairs
+→ choose only uncovered pairs while any remain
+→ after 100% coverage, seeded random may repeat
+```
+
+Final acceptance requires:
+
+```text
+Run Verdict = Passed
+Coverage = 100%
+No InfrastructureError
+No failed Oracle
+```
+
+AutoLab currently has 7 eligible interaction pairs:
+
+```text
+button.confirm
+├─ click
+├─ double-click
+├─ drag → toggle.music
+├─ hold
+└─ hover
+
+toggle.music
+├─ click
+└─ scroll
+```
+
+Default run remains:
+
+```text
 Seed = 12345
 Iterations = 25
 ```
 
-The previous P11 `InteractionRunnerProbe` remains in the scene but is disabled while the Monkey probe owns the virtual input run.
-
-Expected runtime marker:
+Expected final marker:
 
 ```text
-P12.1 SEEDED POINTER MONKEY PASS
+P12 DETERMINISTIC MONKEY COMPLETE
 Seed=12345
-Iterations=25
-All selected actions executed through InteractionRunner.
+Coverage=7/7 (100%)
+Selection / Drag / Verification / Evidence / Coverage PASS
 ```
 
-
-## P12.2 AutoLab Monkey Presentation
-
-Presentation remains AutoLab-owned for now. Core Monkey stays headless.
-
-```text
-AutoLabSeededPointerMonkeyProbe
-        ↓ lifecycle updates
-AutoLabMonkeyPresentation
-        ├─ actual virtual mouse position
-        ├─ pointer trail
-        ├─ pressed-state cursor emphasis
-        ├─ current action / target label
-        ├─ seed / iteration / status HUD
-        ├─ recent step history
-        └─ failure detail
-```
-
-The presenter binds directly to the virtual `Mouse` created by `UnityPhysicalInputDriver`, so the on-screen cursor reflects the actual submitted Unity Input System device rather than an inferred target position.
-
-AutoLab adds presentation-only pacing between selected user-level interactions:
-
-```text
-selection preview = 0.20 s
-post-step pause    = 0.15 s
-```
-
-These delays exist outside `SeededPointerMonkey` and do not change the internal interaction semantics.
-
-Expected behavior:
-
-```text
-HUD shows Seed / Iteration / Action / Target / Status
-visible crosshair follows virtual mouse
-trail shows recent pointer movement
-hold visibly shows DOWN state
-recent steps accumulate with PASS / FAIL
-```
+When this marker is observed in AutoLab, P12 is fully accepted.

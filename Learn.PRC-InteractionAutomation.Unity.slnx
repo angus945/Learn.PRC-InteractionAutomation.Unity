@@ -13,6 +13,8 @@
   <Project Path="Module.InteractionAutomation.Availability.Tests.csproj" />
   <Project Path="Module.InteractionAutomation.Monkey.csproj" />
   <Project Path="Module.InteractionAutomation.Monkey.Tests.csproj" />
+  <Project Path="Module.InteractionAutomation.Monkey.Unity3D.csproj" />
+  <Project Path="Module.InteractionAutomation.Monkey.Unity3D.Tests.csproj" />
   <Project Path="Project.RpcLab.Runtime.csproj" />
   <Project Path="Module.InteractionAutomation.Targets.Unity3D.PlayMode.Tests.csproj" />
   <Project Path="Module.Communication.Unity3D.PlayMode.Tests.csproj" />
